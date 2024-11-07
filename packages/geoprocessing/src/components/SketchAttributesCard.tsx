@@ -126,7 +126,13 @@ export const SketchAttributesCard = ({
                       paddingLeft: 6,
                     }}
                   >
-                    {t(valueLabel) /* i18next-extract-disable-line */}
+                    {valueLabel
+                      ? Array.isArray(valueLabel)
+                        ? valueLabel.map((v, index) => (
+                            <div key={index}>{t(v)}</div>
+                          ))
+                        : t(valueLabel) /* i18next-extract-disable-line */
+                      : "N/A"}
                   </td>
                   {/* <span>{attr.label}</span>=<span>{attr.value}</span> */}
                 </tr>
