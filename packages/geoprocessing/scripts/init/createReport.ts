@@ -10,8 +10,6 @@ import {
   GeoprocessingJsonConfig,
 } from "../../src/types/index.js";
 import {
-  getBlankComponentPath,
-  getBlankFunctionPath,
   getOceanEEZComponentPath,
   getOceanEEZFunctionPath,
   getProjectComponentPath,
@@ -31,39 +29,27 @@ const createReport = async () => {
       choices: [
         {
           value: "blank",
-          name: "Blank report",
+          name: "Blank report - empty report ready to build from scratch",
         },
         {
           value: "raster",
-          name: "Raster overlap report - Calculates sketch overlap with raster data sources",
+          name: "Raster overlap report - calculates sketch overlap with raster datasources",
         },
         {
           value: "vector",
-          name: "Vector overlap report - Calculates sketch overlap with vector data sources",
+          name: "Vector overlap report - calculates sketch overlap with vector datasources",
         },
       ],
     },
     {
       type: "input",
       name: "description",
-      message: "Describe what this report calculates",
-    },
-    {
-      type: "list",
-      name: "executionMode",
-      message: "Choose an execution mode for this report",
-      choices: [
-        {
-          value: "sync",
-          name: "Sync - Best for quick analyses (< 2s)",
-        },
-        {
-          value: "async",
-          name: "Async - Better for long-running processes",
-        },
-      ],
+      message:
+        "Describe what this reports geoprocessing function will calculate (e.g. Calculate sketch overlap with boundary polygons)",
     },
   ]);
+
+  answers.executionMode = "async";
 
   // Title of report
   if (answers.type === "raster" || answers.type === "vector") {
@@ -137,7 +123,24 @@ const createReport = async () => {
         type: "list",
         name: "stat",
         message: "Statistic to calculate",
-        choices: ["sum", "count", "area"],
+        choices: [
+          {
+            value: "valid",
+            name: "valid - count of valid raster cells overlapping with sketch (not nodata cells)",
+          },
+          {
+            value: "count",
+            name: "count - count of all raster cells overlapping with sketch (valid and invalid)",
+          },
+          {
+            value: "sum",
+            name: "sum - sum of value of valid cells overlapping with sketch",
+          },
+          {
+            value: "area",
+            name: "area - area in square meters of valid raster cells overlapping with sketch",
+          },
+        ],
       };
       const { stat } = await inquirer.prompt([statQuestion]);
       answers.stat = stat;
@@ -176,16 +179,10 @@ export async function makeReport(
   const projectFunctionPath = getProjectFunctionPath(basePath);
   const projectComponentPath = getProjectComponentPath(basePath);
 
-  const templateFuncPath =
-    options.type === "blank"
-      ? getBlankFunctionPath()
-      : getOceanEEZFunctionPath();
-  const templateFuncTestPath = `${getBlankFunctionPath()}/blankFunctionSmoke.test.ts`;
-  const templateCompPath =
-    options.type === "blank"
-      ? getBlankComponentPath()
-      : getOceanEEZComponentPath();
-  const templateCompStoriesPath = `${getBlankComponentPath()}/BlankCard.example-stories.ts`;
+  const templateFuncPath = getOceanEEZFunctionPath();
+  const templateFuncTestPath = `${templateFuncPath}/blankFunctionSmoke.test.ts`;
+  const templateCompPath = getOceanEEZComponentPath();
+  const templateCompStoriesPath = `${getOceanEEZComponentPath()}/BlankCard.example-stories.ts`;
 
   if (!fs.existsSync(path.join(basePath, "src"))) {
     fs.mkdirSync(path.join(basePath, "src"));
@@ -233,7 +230,8 @@ export async function makeReport(
 
   // User inputs to replace defaults
   const funcName = options.title;
-  const compName = funcName.charAt(0).toUpperCase() + funcName.slice(1);
+  const compName =
+    funcName.charAt(0).toUpperCase() + funcName.slice(1) + "Card";
 
   // Write function file
   await fs.writeFile(
@@ -257,7 +255,7 @@ export async function makeReport(
     `${projectComponentPath}/${compName}.tsx`,
     componentCode
       .toString()
-      .replace(defaultCompRegex, `${compName}`)
+      .replace(defaultCompRegex, compName)
       .replace(defaultFuncRegex, `${funcName}`)
       .replaceAll("overlapFunction", `${funcName}`)
       .replace(`"sum"`, `"${options.stat}"`), // for raster/vector overlap reports
@@ -268,7 +266,7 @@ export async function makeReport(
     `${projectComponentPath}/${compName}.example-stories.ts`,
     storiesComponentCode
       .toString()
-      .replaceAll(blankCompRegex, `${compName}`)
+      .replaceAll(blankCompRegex, compName)
       .replaceAll(blankFuncRegex, `${funcName}`),
   );
 
@@ -290,18 +288,33 @@ export async function makeReport(
 
   // Finish and show next steps
   spinner.succeed(`Created ${options.title} report`);
+  spinner.succeed("Registered report assets in project/geoprocessing.json");
   if (interactive) {
-    console.log(chalk.blue(`\nReport successfully created!`));
+    console.log("\n");
     console.log(
-      chalk.blue(`Function: ${`${projectFunctionPath}/${funcName}.ts`}`),
+      chalk.blue(
+        `Geoprocessing function: ${`${projectFunctionPath}/${funcName}.ts`}`,
+      ),
     );
     console.log(
-      chalk.blue(`Component: ${`${projectComponentPath}/${compName}.tsx`}`),
+      chalk.blue(
+        `Smoke test: ${`${projectFunctionPath}/${funcName}Smoke.test.ts`}`,
+      ),
+    );
+    console.log(
+      chalk.blue(
+        `Report component: ${`${projectComponentPath}/${compName}.tsx`}`,
+      ),
+    );
+    console.log(
+      chalk.blue(
+        `Story generator: ${`${projectComponentPath}/${compName}.example-stories.ts`}`,
+      ),
     );
     console.log(`\nNext Steps:
-    * Add your new <${compName} /> component to one of your reports (e.g. src/clients/SimpleReport.tsx) or report pages (e.g. src/components/ViabilityPage.tsx)
-    * Run 'npm test' to run smoke tests against your new function
-    * View your report using 'npm storybook' with smoke test output
+    * 'npm test' to run smoke tests against your new geoprocessing function
+    * 'npm run storybook' to view your new report with smoke test output
+    * Add <${compName} /> to a top-level report client or page when ready
   `);
   }
 }

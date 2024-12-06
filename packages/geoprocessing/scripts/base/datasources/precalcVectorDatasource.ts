@@ -10,7 +10,6 @@ import {
   FeatureCollection,
   MultiPolygon,
   ProjectClientBase,
-  clipMultiMerge,
   createMetric,
   datasourceConfig,
   genZodErrorMessage,
@@ -18,6 +17,7 @@ import {
 import { getFeatures } from "../../../src/dataproviders/index.js";
 import { area, truncate, featureCollection } from "@turf/turf";
 import { getGeographyFeatures } from "../geographies/helpers.js";
+import { clipMultiMerge } from "../../../src/toolbox/clip.js";
 
 /**
  * Creates precalc metrics for a datasource and geography
@@ -48,7 +48,6 @@ export async function precalcVectorDatasource<C extends ProjectClientBase>(
   });
 
   // Create metrics and return to precalc.ts
-  console.log("precalcing vector datasource", url);
   return genVectorMetrics(datasource, url, geography, geogDs, extraOptions);
 }
 

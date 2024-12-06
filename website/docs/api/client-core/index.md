@@ -1435,6 +1435,12 @@ Re-exports [NullSketchCollection](../geoprocessing/interfaces/NullSketchCollecti
 
 ***
 
+### numberFormat
+
+Re-exports [numberFormat](../geoprocessing/functions/numberFormat.md)
+
+***
+
 ### Objective
 
 Re-exports [Objective](../geoprocessing/type-aliases/Objective.md)
@@ -1801,6 +1807,12 @@ Re-exports [roundDecimal](../geoprocessing/functions/roundDecimal.md)
 
 ***
 
+### roundDecimalFormat
+
+Re-exports [roundDecimalFormat](../geoprocessing/functions/roundDecimalFormat.md)
+
+***
+
 ### RoundDecimalOptions
 
 Re-exports [RoundDecimalOptions](../geoprocessing/interfaces/RoundDecimalOptions.md)
@@ -1981,6 +1993,12 @@ Re-exports [testWithinPerc](../geoprocessing/functions/testWithinPerc.md)
 
 ***
 
+### toChildProperties
+
+Re-exports [toChildProperties](../geoprocessing/functions/toChildProperties.md)
+
+***
+
 ### toNullSketch
 
 Re-exports [toNullSketch](../geoprocessing/functions/toNullSketch.md)
@@ -2008,6 +2026,12 @@ Re-exports [toShortSketches](../geoprocessing/functions/toShortSketches.md)
 ### toSketchArray
 
 Re-exports [toSketchArray](../geoprocessing/functions/toSketchArray.md)
+
+***
+
+### toSketchPropertiesArray
+
+Re-exports [toSketchPropertiesArray](../geoprocessing/functions/toSketchPropertiesArray.md)
 
 ***
 

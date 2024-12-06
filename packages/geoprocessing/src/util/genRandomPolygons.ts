@@ -10,7 +10,7 @@ export const genRandomPolygons = (config: {
   bounds: BBox;
   max_radial_length?: number;
 }) => {
-  const { numPolygons = 300, bounds, max_radial_length = 0.5 } = config;
+  const { numPolygons = 300, bounds, max_radial_length = 0.25 } = config;
   const randPolys = randomPolygon(numPolygons, {
     bbox: bounds,
     max_radial_length,
@@ -21,9 +21,9 @@ export const genRandomPolygons = (config: {
     (previousValue, currentFeature, featureIndex) => {
       return previousValue.concat({
         ...currentFeature,
-        id: featureIndex,
+        id: featureIndex + 1,
         properties: {
-          id: featureIndex,
+          id: featureIndex + 1,
         },
       });
     },

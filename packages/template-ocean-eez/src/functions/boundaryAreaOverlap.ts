@@ -6,7 +6,6 @@ import {
   Polygon,
   ReportResult,
   SketchCollection,
-  toNullSketch,
   overlapFeatures,
   rekeyMetrics,
   sortMetrics,
@@ -15,8 +14,8 @@ import {
   DefaultExtraParams,
   splitSketchAntimeridian,
   isVectorDatasource,
+  getFeatures,
 } from "@seasketch/geoprocessing";
-import { getFeatures } from "@seasketch/geoprocessing/dataproviders";
 import { bbox } from "@turf/turf";
 import project from "../../project/projectClient.js";
 import { clipToGeography } from "../util/clipToGeography.js";
@@ -96,7 +95,6 @@ export async function boundaryAreaOverlap(
 
   return {
     metrics: sortMetrics(rekeyMetrics(metrics)),
-    sketch: toNullSketch(sketch, true),
   };
 }
 

@@ -79,7 +79,30 @@ export function getJsonUserAttribute<T>(
   }
 }
 
-/** Helper to convert a Sketch or SketchCollection to a Sketch array, maintaining geometry type */
+/**
+ * Converts array of sketches to an array of their SketchProperties
+ */
+export function toSketchPropertiesArray(
+  sketchArray: Sketch[] | NullSketch[],
+): SketchProperties[] {
+  return sketchArray.map((s) => s.properties);
+}
+
+/**
+ * Returns SketchProperties for each child sketch in a SketchCollection
+ */
+export function toChildProperties(
+  sketchCollection: SketchCollection,
+): SketchProperties[] {
+  return sketchCollection.features.map((sketch) => sketch.properties);
+}
+
+/**
+ * Converts a Sketch or SketchCollection to a Sketch array, maintaining geometry type
+ * Useful for putting in a consistent form that can be iterated over
+ * @param input sketch or sketch collection
+ * @returns array of sketches, if input is a sketch collection then it is the child sketches
+ */
 export function toSketchArray<G>(
   input: Sketch<G> | SketchCollection<G>,
 ): Sketch<G>[] {
@@ -316,7 +339,20 @@ export const genSketch = <G extends Geometry = SketchGeometryTypes>(
     ]) as unknown as Feature<G>,
     name = `sketch-${uuid()}`,
     id = uuid(),
-    userAttributes = [],
+    userAttributes = [
+      {
+        label: "Type of Sketch",
+        fieldType: "ChoiceField",
+        exportId: "TYPE_OF_SKETCH",
+        value: "sample",
+      },
+      {
+        label: "Notes",
+        fieldType: "TextArea",
+        exportId: "NOTES",
+        value: "This is a sample sketch",
+      },
+    ],
     sketchClassId = uuid(),
     createdAt = new Date().toISOString(),
     updatedAt = new Date().toISOString(),

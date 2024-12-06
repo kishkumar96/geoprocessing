@@ -1,4 +1,4 @@
-import { Feature, Polygon, BBox } from "../types/index.js";
+import { Feature, Polygon, BBox, MultiPolygon } from "../types/index.js";
 
 // Where datasources meet data providers meet preprocessors/geoprocessors
 
@@ -13,7 +13,7 @@ export type ClipOperations = "intersection" | "difference";
 
 /** Parameters for clip operation using polygon features */
 export interface FeatureClipOperation {
-  clipFeatures: Feature<Polygon>[];
+  clipFeatures: Feature<Polygon | MultiPolygon>[];
   operation: ClipOperations;
 }
 
@@ -33,12 +33,8 @@ export interface DatasourceClipOperation {
   options?: DatasourceOptions;
 }
 
-/** Optional parameters for preprocessor function */
+/** Optional parameters for polygon clip preprocessor */
 export interface ClipOptions {
   /** Ensures result is a polygon. If clip results in multipolygon, returns the largest component */
   ensurePolygon?: boolean;
-  /** maxSize in square kilometers that clipped polygon result can be.  Preprocessor function will throw if larger. */
-  maxSize?: number;
-  /** Whether or not maxSize should be enforced and throw */
-  enforceMaxSize?: boolean;
 }

@@ -1,49 +1,32 @@
 import React from "react";
 import { Trans, useTranslation } from "react-i18next";
-import { ResultsCard } from "@seasketch/geoprocessing/client-ui";
-// Import the results type definition from your functions to type-check and
-// access the result in your component render function
+import {
+  ResultsCard,
+  useSketchProperties,
+} from "@seasketch/geoprocessing/client-ui";
+import { roundDecimalFormat } from "@seasketch/geoprocessing/client-core";
+// Import SimpleResults to type-check data access in ResultsCard render function
 import { SimpleResults } from "../functions/simpleFunction.js";
-import Translator from "../components/TranslatorAsync.js";
-import { roundDecimal } from "@seasketch/geoprocessing/client-core";
 
-const Number = new Intl.NumberFormat("en", { style: "decimal" });
-
-/**
- * SimpleCard component
- */
 export const SimpleCard = () => {
   const { t } = useTranslation();
-  const titleTrans = t("SimpleCard title", "Zone Report");
+  const [{ isCollection }] = useSketchProperties();
+  const titleTrans = t("SimpleCard title", "Simple Report");
   return (
     <>
       <ResultsCard title={titleTrans} functionName="simpleFunction">
         {(data: SimpleResults) => {
+          const areaSqKm = data.area / 1_000_000;
+          const areaString = roundDecimalFormat(areaSqKm, 0, {
+            keepSmallValues: true,
+          });
+          const sketchStr = isCollection ? t("sketch collection") : t("sketch");
+
           return (
             <>
               <p>
-                📐
                 <Trans i18nKey="SimpleCard sketch size message">
-                  This sketch is{" "}
-                  <b>{{ area: Number.format(Math.round(data.area * 1e-6)) }}</b>{" "}
-                  square kilometers
-                </Trans>
-              </p>
-              <p>
-                <Trans i18nKey="SimpleCard ecoregion message">
-                  The following ecoregions are nearby:{" "}
-                  <b>{data.nearbyEcoregions.join(", ")}</b>
-                </Trans>
-              </p>
-              <p>
-                <Trans i18nKey="SimpleCard temperature message">
-                  The present day sea surface temperature within this sketch is{" "}
-                  <b>
-                    {{ minTemp: roundDecimal(data.minTemp, 1) }} -{" "}
-                    {{ maxTemp: roundDecimal(data.maxTemp, 1) }}
-                    &deg;C
-                  </b>
-                  .
+                  This {{ sketchStr }} is {{ areaString }} square kilometers.
                 </Trans>
               </p>
             </>
@@ -51,16 +34,5 @@ export const SimpleCard = () => {
         }}
       </ResultsCard>
     </>
-  );
-};
-
-/**
- * SimpleCard as a top-level report client
- */
-export const SimpleCardReportClient = () => {
-  return (
-    <Translator>
-      <SimpleCard />
-    </Translator>
   );
 };

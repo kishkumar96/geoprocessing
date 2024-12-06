@@ -67,23 +67,6 @@ async function createFunction() {
         },
       ],
     },
-    {
-      type: "list",
-      name: "executionMode",
-      message: "Choose an execution mode",
-      default: 0,
-      when: (answers) => answers.type === "geoprocessing",
-      choices: [
-        {
-          value: "sync",
-          name: "Sync - Best for quick analyses (< 2s)",
-        },
-        {
-          value: "async",
-          name: "Async - Better for long-running processes",
-        },
-      ],
-    },
   ]);
   answers.title = camelcase(answers.title);
   if (answers.type === "preprocessing" && answers.clipToEez === "yes") {
@@ -91,6 +74,7 @@ async function createFunction() {
   }
 
   if (answers.type === "geoprocessing") {
+    answers.executionMode = "async";
     await makeGeoprocessingHandler(answers, true, "");
   } else {
     await makePreprocessingHandler(answers, true, "");
@@ -166,12 +150,24 @@ export async function makeGeoprocessingHandler(
   spinner.succeed(
     `created ${options.title} function in ${projectFunctionPath}/`,
   );
+  spinner.succeed("Registered function in project/geoprocessing.json");
+
   if (interactive) {
-    console.log(chalk.blue(`\nGeoprocessing function initialized`));
+    console.log("\n");
+    console.log(
+      chalk.blue(
+        `Geoprocessing function: ${`${projectFunctionPath}/${options.title}.ts`}`,
+      ),
+    );
+    console.log(
+      chalk.blue(
+        `Smoke test: ${`${projectFunctionPath}/${options.title}Smoke.test.ts`}`,
+      ),
+    );
     console.log(`\nNext Steps:
-    * Update your function definition in ${`${projectFunctionPath}/${options.title}.ts`}
-    * Smoke test in ${`${projectFunctionPath}/${options.title}Smoke.test.ts`} will be run the next time you use 'npm test'
+    * Update the geoprocessing function with your analysis
     * Populate examples/sketches folder with sketches for smoke test to run against
+    * 'npm test' to smoke test your new geoprocessing function against all example sketches
   `);
   }
 }

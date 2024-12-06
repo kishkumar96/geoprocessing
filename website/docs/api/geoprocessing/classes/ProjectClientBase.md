@@ -444,6 +444,24 @@ Returns ExternalVectorDatasource given datasourceId, throws if not found
 
 ***
 
+### getFgbPath()
+
+```ts
+getFgbPath(ds): string
+```
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `ds` | \| `object` \| `object` \| `object` \| `object` \| `object` & `object` \| `object` & `object` \| [`ImportVectorDatasourceConfig`](../type-aliases/ImportVectorDatasourceConfig.md) \| [`ImportRasterDatasourceConfig`](../type-aliases/ImportRasterDatasourceConfig.md) |
+
+#### Returns
+
+`string`
+
+***
+
 ### getGeographyByGroup()
 
 ```ts
@@ -752,7 +770,7 @@ Optional, constrain datasource to smaller bbox
 classKeys: string[];
 ```
 
-keys to generate classes for.  Vector - property names
+properties whose values define classes of data.
 
 ##### created
 
@@ -993,13 +1011,88 @@ optional objectiveId: string;
 
 group level objective, applies to all classes
 
-##### type
+##### type?
 
 ```ts
-type: string;
+optional type: string;
 ```
 
-Metric type
+unique identifier of what the metric represents, such as its type and method for calculation - e.g. areaOverlap, valueOverlap. To be defined by the user
+
+***
+
+### getMetricGroupClassKey()
+
+```ts
+getMetricGroupClassKey(metricGroup, options): undefined | string
+```
+
+Returns classKey for given metric group, class-level if available, otherwise metricGroup level if not
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `metricGroup` | `object` | metricGroup to search for class and classKey |
+| `metricGroup.classes` | `object`[] | data classes used by group |
+| `metricGroup.classKey`? | `string` | Optional datasource class key used to source classIds |
+| `metricGroup.datasourceId`? | `string` | Datasource to generate metrics from |
+| `metricGroup.layerId`? | `string` | Optional ID of map layer associated with this metric |
+| `metricGroup.metricId` | `string` | Unique id of metric in project |
+| `metricGroup.objectiveId`? | `string` | group level objective, applies to all classes |
+| `metricGroup.type`? | `string` | unique identifier of what the metric represents, such as its type and method for calculation - e.g. areaOverlap, valueOverlap. To be defined by the user |
+| `options` | `object` | - |
+| `options.classId`? | `string` | optional data class ID to specifically get classKey for |
+
+#### Returns
+
+`undefined` \| `string`
+
+the classKey name or undefined
+
+#### Throws
+
+if class does not exist in metric group with given classId
+
+***
+
+### getMetricGroupDatasource()
+
+```ts
+getMetricGroupDatasource(metricGroup, options): object | object | object & object | object & object
+```
+
+Returns datasource for given MetricGroup.
+If classId is provided, returns class-level datasource if assigned, otherwise falls back to top-level metricGroup datasource
+
+#### Parameters
+
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `metricGroup` | `object` | metricGroup to get datasource for |
+| `metricGroup.classes` | `object`[] | data classes used by group |
+| `metricGroup.classKey`? | `string` | Optional datasource class key used to source classIds |
+| `metricGroup.datasourceId`? | `string` | Datasource to generate metrics from |
+| `metricGroup.layerId`? | `string` | Optional ID of map layer associated with this metric |
+| `metricGroup.metricId` | `string` | Unique id of metric in project |
+| `metricGroup.objectiveId`? | `string` | group level objective, applies to all classes |
+| `metricGroup.type`? | `string` | unique identifier of what the metric represents, such as its type and method for calculation - e.g. areaOverlap, valueOverlap. To be defined by the user |
+| `options` | `object` | - |
+| `options.classId`? | `string` | metricGroup class to get datasource for |
+
+#### Returns
+
+`object` \| `object` \| `object` & `object` \| `object` & `object`
+
+the datasource object
+
+#### Throws
+
+if class does not exist in metric group with given classId
+
+#### Throws
+
+if datasourceId is missing for metricGroup and class
 
 ***
 
@@ -1009,21 +1102,25 @@ Metric type
 getMetricGroupObjectives(metricGroup, t?): object[]
 ```
 
-Returns all Objectives for MetricGroup, optionally translating short description, given i18n t function
+Returns Objectives for MetricGroup
+If at least one class has an objective assigned, then it returns those, missing classes with no objective get the top-level objective
+If no class-level objectives are found, then it returns the top-level objective
+If no objectives are found, returns an empty array
+Given i18n t function it will also translate the short description
 
 #### Parameters
 
 | Parameter | Type | Description |
 | ------ | ------ | ------ |
-| `metricGroup` | `object` | - |
+| `metricGroup` | `object` |  |
 | `metricGroup.classes` | `object`[] | data classes used by group |
 | `metricGroup.classKey`? | `string` | Optional datasource class key used to source classIds |
 | `metricGroup.datasourceId`? | `string` | Datasource to generate metrics from |
 | `metricGroup.layerId`? | `string` | Optional ID of map layer associated with this metric |
 | `metricGroup.metricId`? | `string` | Unique id of metric in project |
 | `metricGroup.objectiveId`? | `string` | group level objective, applies to all classes |
-| `metricGroup.type`? | `string` | Metric type |
-| `t`? | `TFunction`\<`"translation"`, `undefined`\> | - |
+| `metricGroup.type`? | `string` | unique identifier of what the metric represents, such as its type and method for calculation - e.g. areaOverlap, valueOverlap. To be defined by the user |
+| `t`? | `TFunction`\<`"translation"`, `undefined`\> |  |
 
 #### Returns
 
@@ -1050,7 +1147,7 @@ Simple helper that given MetricGroup, returns a consistent ID string for a perce
 | `mg.layerId`? | `string` | Optional ID of map layer associated with this metric |
 | `mg.metricId` | `string` | Unique id of metric in project |
 | `mg.objectiveId`? | `string` | group level objective, applies to all classes |
-| `mg.type` | `string` | Metric type |
+| `mg.type`? | `string` | unique identifier of what the metric represents, such as its type and method for calculation - e.g. areaOverlap, valueOverlap. To be defined by the user |
 
 #### Returns
 
@@ -1084,7 +1181,7 @@ Returns Objective given objectiveId
 countsToward: Record<string, "yes" | "no" | "maybe"> = objectiveAnswerMapSchema;
 ```
 
-Generic map of MPA protection levels to whether they count towards objective
+Generic map of group names (e.g. MPA protection levels) to whether they count towards objective
 
 ##### objectiveId
 
@@ -1132,7 +1229,7 @@ Returns precalc metrics from precalc.json.  Optionally filters down to specific 
 | `mg.layerId`? | `string` | Optional ID of map layer associated with this metric |
 | `mg.metricId`? | `string` | Unique id of metric in project |
 | `mg.objectiveId`? | `string` | group level objective, applies to all classes |
-| `mg.type`? | `string` | Metric type |
+| `mg.type`? | `string` | unique identifier of what the metric represents, such as its type and method for calculation - e.g. areaOverlap, valueOverlap. To be defined by the user |
 | `metricId`? | `string` | string, "area", "count", or "sum" |
 | `geographyId`? | `string` | string, geographyId to get precalculated metrics for |
 
@@ -1310,7 +1407,7 @@ Optional, constrain datasource to smaller bbox
 classKeys: string[];
 ```
 
-keys to generate classes for.  Vector - property names
+properties whose values define classes of data.
 
 ##### datasourceId
 

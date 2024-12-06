@@ -17,7 +17,6 @@ import path from "node:path";
 import fs from "node:fs";
 
 import { getProjectClient } from "../base/project/projectClient.js";
-import { precalcQuestion } from "./precalcQuestion.js";
 import { explodeQuestion } from "./explodeQuestion.js";
 
 $.verbose = false;
@@ -58,7 +57,7 @@ const datasources = readDatasources();
 const geoTypeAnswer = await geoTypeQuestion();
 const srcAnswer = await srcQuestion();
 
-const config = await (async () => {
+const options = await (async () => {
   if (geoTypeAnswer.geo_type === "vector") {
     // Vector datasource
     const layerNameAnswer = await layerNameQuestion(srcAnswer.src);
@@ -67,26 +66,41 @@ const config = await (async () => {
       srcAnswer.src,
     );
     const explodeAnswers = await explodeQuestion();
-    const detailedVectorAnswers = await detailedVectorQuestions(
-      srcAnswer.src,
-      layerNameAnswer.layerName!,
-    );
-    const precalcAnswers = await precalcQuestion();
 
-    const config = vectorMapper({
+    const { stdout } =
+      await $`ogrinfo -json -so -nocount -noextent -nogeomtype ${srcAnswer.src} ${layerNameAnswer.layerName!}`;
+    const fields: string[] = JSON.parse(stdout)
+      .layers.find((layer) => layer.name === layerNameAnswer.layerName!)
+      .fields.map((field) => field.name);
+
+    const detailedVectorAnswers = await detailedVectorQuestions(fields);
+    const remFields = fields.filter(
+      (f) => !detailedVectorAnswers.classKeys.includes(f),
+    );
+
+    // If there are fields left, ask user if they want to keep any of them
+    const vectorAnswerProperties = await (async () => {
+      if (remFields.length > 0) {
+        return vectorQuestionProperties(remFields);
+      } else {
+        return { propertiesToKeep: [] };
+      }
+    })();
+
+    const options = vectorMapper({
       ...geoTypeAnswer,
       ...srcAnswer,
       ...datasourceIdAnswer,
       ...layerNameAnswer,
-
       ...detailedVectorAnswers,
+      ...vectorAnswerProperties,
       formats: datasourceConfig.importDefaultVectorFormats.concat(
         detailedVectorAnswers.formats,
       ),
-      ...precalcAnswers,
       ...explodeAnswers,
+      precalc: true,
     });
-    return config;
+    return options;
   } else {
     // Raster datasource
     const datasourceIdAnswer = await datasourceIdQuestion(
@@ -94,20 +108,19 @@ const config = await (async () => {
       srcAnswer.src,
     );
     const detailedRasterAnswers = await detailedRasterQuestions(srcAnswer.src);
-    const precalcAnswers = await precalcQuestion();
 
-    const config = rasterMapper({
+    const options = rasterMapper({
       ...geoTypeAnswer,
       ...srcAnswer,
       ...datasourceIdAnswer,
       ...detailedRasterAnswers,
-      ...precalcAnswers,
+      precalc: true,
     });
-    return config;
+    return options;
   }
 })();
 
-await importDatasource(projectClient, config, {});
+await importDatasource(projectClient, options, {});
 
 /** Maps answers object to options */
 function vectorMapper(
@@ -225,26 +238,23 @@ async function layerNameQuestion(
 
 /** Get classKeys, propertiesToKeep, and formats */
 async function detailedVectorQuestions(
-  srcPath: string,
-  layerName: string,
-): Promise<
-  Pick<
-    ImportVectorDatasourceAnswers,
-    "classKeys" | "propertiesToKeep" | "formats"
-  >
-> {
-  const { stdout } =
-    await $`ogrinfo -json -so -nocount -noextent -nogeomtype ${srcPath} ${layerName}`;
-  const fields = JSON.parse(stdout)
-    .layers.find((layer) => layer.name === layerName)
-    .fields.map((field) => field.name);
-
+  fields: string[],
+): Promise<Pick<ImportVectorDatasourceAnswers, "classKeys" | "formats">> {
   return inquirer.prompt<
-    Pick<
-      ImportVectorDatasourceAnswers,
-      "classKeys" | "propertiesToKeep" | "formats"
-    >
+    Pick<ImportVectorDatasourceAnswers, "classKeys" | "formats">
   >([
+    {
+      type: "checkbox",
+      name: "formats",
+      message: `(Optional) additional formats to create (besides ${datasourceConfig.importDefaultVectorFormats.join(
+        ", ",
+      )})`,
+      choices: datasourceConfig.importExtraVectorFormats.map((name) => ({
+        value: name,
+        name: `${name} - ${datasourceFormatDescriptions[name]}`,
+        checked: false,
+      })),
+    },
     {
       type: "checkbox",
       name: "classKeys",
@@ -257,6 +267,16 @@ async function detailedVectorQuestions(
         name: field,
       })),
     },
+  ]);
+}
+
+/** Get classKeys, propertiesToKeep, and formats */
+async function vectorQuestionProperties(
+  fields: string[],
+): Promise<Pick<ImportVectorDatasourceAnswers, "propertiesToKeep">> {
+  return inquirer.prompt<
+    Pick<ImportVectorDatasourceAnswers, "propertiesToKeep">
+  >([
     {
       type: "checkbox",
       name: "propertiesToKeep",
@@ -267,18 +287,6 @@ async function detailedVectorQuestions(
       choices: fields.map((field) => ({
         value: field,
         name: field,
-      })),
-    },
-    {
-      type: "checkbox",
-      name: "formats",
-      message: `These formats are automatically created: ${datasourceConfig.importDefaultVectorFormats.join(
-        ", ",
-      )}. Select any additional formats you want created`,
-      choices: datasourceConfig.importExtraVectorFormats.map((name) => ({
-        value: name,
-        name: `${name} - ${datasourceFormatDescriptions[name]}`,
-        checked: false,
       })),
     },
   ]);
@@ -318,11 +326,11 @@ async function detailedRasterQuestions(
       choices: [
         {
           value: "quantitative",
-          name: "Quantitative - values represent amounts, measurement of single thing",
+          name: "Quantitative - cell value (number) represents a measurement of a single thing",
         },
         {
           value: "categorical",
-          name: "Categorical - values represent groups",
+          name: "Categorical - cell value (number) represents a category the cell is assigned to",
         },
       ],
     },

@@ -8,8 +8,8 @@ import {
   Feature,
   isSketchCollection,
   genSketchCollection,
-} from "@seasketch/geoprocessing/client-core";
-import { getFeatures } from "@seasketch/geoprocessing/dataproviders";
+  getFeatures,
+} from "@seasketch/geoprocessing";
 import { bbox, featureCollection, simplify } from "@turf/turf";
 import project from "../../project/projectClient.js";
 import {
@@ -19,9 +19,10 @@ import {
 } from "@seasketch/geoprocessing";
 
 /**
- * Clips sketch to geography
+ * Returns intersection of sketch with geography features.
+ * If sketch does not overlap with geography returns sketch with zero polygon geometry (null island)
  * @param sketch Sketch or SketchCollection
- * @param geography geography to clip sketch to
+ * @param geography geography to clip sketch to, geography features are fetched
  * @param options optionally simplify sketch
  * @param simplifyOptions.tolerance tolerance in meters
  * @param simplifyOptions.highQuality highQuality simplification

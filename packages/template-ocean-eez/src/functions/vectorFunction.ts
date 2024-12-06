@@ -6,25 +6,22 @@ import {
   GeoprocessingHandler,
   getFirstFromParam,
   DefaultExtraParams,
-  splitSketchAntimeridian,
   Feature,
   isVectorDatasource,
   overlapFeatures,
+  getFeaturesForSketchBBoxes,
 } from "@seasketch/geoprocessing";
-import bbox from "@turf/bbox";
 import project from "../../project/projectClient.js";
 import {
   Metric,
   ReportResult,
   rekeyMetrics,
   sortMetrics,
-  toNullSketch,
 } from "@seasketch/geoprocessing/client-core";
 import { clipToGeography } from "../util/clipToGeography.js";
-import { fgbFetchAll } from "@seasketch/geoprocessing/dataproviders";
 
 /**
- * vectorFunction: A geoprocessing function that calculates overlap metrics
+ * vectorFunction: A geoprocessing function that calculates overlap metrics for vector datasources
  * @param sketch - A sketch or collection of sketches
  * @param extraParams
  * @returns Calculated metrics and a null sketch
@@ -35,56 +32,55 @@ export async function vectorFunction(
     | SketchCollection<Polygon | MultiPolygon>,
   extraParams: DefaultExtraParams = {},
 ): Promise<ReportResult> {
-  // Use caller-provided geographyId if provided
+  // Check for client-provided geography, fallback to first geography assigned as default-boundary in metrics.json
   const geographyId = getFirstFromParam("geographyIds", extraParams);
-
-  // Get geography features, falling back to geography assigned to default-boundary group
   const curGeography = project.getGeographyById(geographyId, {
     fallbackGroup: "default-boundary",
   });
+  // Clip portion of sketch outside geography features
+  const clippedSketch = await clipToGeography(sketch, curGeography);
 
-  // Support sketches crossing antimeridian
-  const splitSketch = splitSketchAntimeridian(sketch);
-
-  // Clip to portion of sketch within current geography
-  const clippedSketch = await clipToGeography(splitSketch, curGeography);
-
-  // Get bounding box of sketch remainder
-  const sketchBox = clippedSketch.bbox || bbox(clippedSketch);
-
-  // Chached features
-  const cachedFeatures: Record<string, Feature<Polygon | MultiPolygon>[]> = {};
+  const featuresByDatasource: Record<
+    string,
+    Feature<Polygon | MultiPolygon>[]
+  > = {};
 
   // Calculate overlap metrics for each class in metric group
   const metricGroup = project.getMetricGroup("vectorFunction");
   const metrics = (
     await Promise.all(
       metricGroup.classes.map(async (curClass) => {
-        if (!curClass.datasourceId)
-          throw new Error(`Expected datasourceId for ${curClass.classId}`);
-
-        const ds = project.getDatasourceById(curClass.datasourceId);
+        const ds = project.getMetricGroupDatasource(metricGroup, {
+          classId: curClass.classId,
+        });
         if (!isVectorDatasource(ds))
           throw new Error(`Expected vector datasource for ${ds.datasourceId}`);
-
         const url = project.getDatasourceUrl(ds);
 
-        // Fetch features overlapping with sketch, pull from cache if already fetched
+        // Fetch features overlapping with sketch, if not already fetched
         const features =
-          cachedFeatures[curClass.datasourceId] ||
-          (await fgbFetchAll<Feature<Polygon | MultiPolygon>>(url, sketchBox));
-        cachedFeatures[curClass.datasourceId] = features;
+          featuresByDatasource[ds.datasourceId] ||
+          (await getFeaturesForSketchBBoxes(sketch, url));
+        featuresByDatasource[ds.datasourceId] = features;
 
-        // If this is a sub-class, filter by class name
-        const finalFeatures =
-          curClass.classKey && curClass.classId !== `${ds.datasourceId}_all`
-            ? features.filter((feat) => {
-                return (
-                  feat.geometry &&
-                  feat.properties![ds.classKeys[0]] === curClass.classId
-                );
-              })
-            : features;
+        // Get classKey for current data class
+        const classKey = project.getMetricGroupClassKey(metricGroup, {
+          classId: curClass.classId,
+        });
+
+        let finalFeatures: Feature<Polygon | MultiPolygon>[] = [];
+        if (!classKey || curClass.classId === `${ds.datasourceId}_all`)
+          // If no classKey defined, then this is probably a metric group of one class, use all features
+          finalFeatures = features;
+        else {
+          // else filter to features that are a member of this class
+          finalFeatures = features.filter(
+            (feat) =>
+              feat.geometry &&
+              feat.properties &&
+              feat.properties[classKey] === curClass.classId,
+          );
+        }
 
         // Calculate overlap metrics
         const overlapResult = await overlapFeatures(
@@ -104,10 +100,8 @@ export async function vectorFunction(
     )
   ).flat();
 
-  // Return a report result with metrics and a null sketch
   return {
     metrics: sortMetrics(rekeyMetrics(metrics)),
-    sketch: toNullSketch(sketch, true),
   };
 }
 
@@ -117,6 +111,4 @@ export default new GeoprocessingHandler(vectorFunction, {
   timeout: 500, // seconds
   memory: 1024, // megabytes
   executionMode: "async",
-  // Specify any Sketch Class form attributes that are required
-  requiresProperties: [],
 });

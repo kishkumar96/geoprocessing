@@ -179,6 +179,21 @@ export class ProjectClientBase implements ProjectClientInterface {
       : `https://gp-${this._package.name}-datasets.s3.${this._geoprocessing.region}.amazonaws.com/`;
   }
 
+  public getFgbPath(
+    ds:
+      | Datasource
+      | VectorDatasource
+      | InternalVectorDatasource
+      | ExternalVectorDatasource
+      | RasterDatasource
+      | ExternalRasterDatasource
+      | InternalRasterDatasource
+      | ImportRasterDatasourceConfig
+      | ImportVectorDatasourceConfig,
+  ) {
+    return `data/dist/${ds.datasourceId}.fgb`;
+  }
+
   public getDatasourceUrl(
     ds:
       | Datasource
@@ -250,7 +265,7 @@ export class ProjectClientBase implements ProjectClientInterface {
     );
   }
 
-  // DATSOURCES //
+  // DATASOURCES //
 
   /** Returns Datasource given datasourceId */
   public getDatasourceById(datasourceId: string): Datasource {
@@ -356,7 +371,7 @@ export class ProjectClientBase implements ProjectClientInterface {
     return getObjectiveById(objectiveId, this._objectives);
   }
 
-  // METRICS //
+  // METRIC GROUPS //
 
   /** Returns MetricGroup given metricId, optional translating display name, given i18n t function */
   public getMetricGroup(metricId: string, t?: TFunction): MetricGroup {
@@ -382,7 +397,16 @@ export class ProjectClientBase implements ProjectClientInterface {
     return `${mg.metricId}Perc`;
   }
 
-  /** Returns all Objectives for MetricGroup, optionally translating short description, given i18n t function */
+  /**
+   * Returns Objectives for MetricGroup
+   * If at least one class has an objective assigned, then it returns those, missing classes with no objective get the top-level objective
+   * If no class-level objectives are found, then it returns the top-level objective
+   * If no objectives are found, returns an empty array
+   * Given i18n t function it will also translate the short description
+   * @param metricGroup
+   * @param t
+   * @returns
+   */
   public getMetricGroupObjectives(
     metricGroup: MetricGroup,
     t?: TFunction,
@@ -395,6 +419,56 @@ export class ProjectClientBase implements ProjectClientInterface {
       ...objective,
       shortDesc: t(objective.shortDesc) /* i18next-extract-disable-line */,
     }));
+  }
+
+  /**
+   * Returns datasource for given MetricGroup.
+   * If classId is provided, returns class-level datasource if assigned, otherwise falls back to top-level metricGroup datasource
+   * @param metricGroup - metricGroup to get datasource for
+   * @param options.classId - metricGroup class to get datasource for
+   * @returns the datasource object
+   * @throws if class does not exist in metric group with given classId
+   * @throws if datasourceId is missing for metricGroup and class
+   */
+  public getMetricGroupDatasource(
+    metricGroup: MetricGroup,
+    options: { classId?: string } = {},
+  ): Datasource {
+    const { classId } = options;
+    if (classId) {
+      const dataClass = metricGroup.classes.find((c) => c.classId === classId);
+      if (dataClass && dataClass.datasourceId)
+        return this.getDatasourceById(dataClass.datasourceId);
+    }
+
+    if (!metricGroup.datasourceId)
+      throw new Error(
+        `Could not find datasourceId for metric group ${metricGroup.metricId} or its class ${classId}, please add one`,
+      );
+    return this.getDatasourceById(metricGroup.datasourceId);
+  }
+
+  /**
+   * Returns classKey for given metric group, class-level if available, otherwise metricGroup level if not
+   * @param metricGroup - metricGroup to search for class and classKey
+   * @param options.classId - optional data class ID to specifically get classKey for
+   * @returns the classKey name or undefined
+   * @throws if class does not exist in metric group with given classId
+   */
+  public getMetricGroupClassKey(
+    metricGroup: MetricGroup,
+    options: { classId?: string } = {},
+  ) {
+    const { classId } = options;
+    if (classId) {
+      const dataClass = metricGroup.classes.find((c) => c.classId === classId);
+      if (!dataClass)
+        throw new Error(
+          `Class not found in metricGroup ${metricGroup.metricId} with classId ${classId}`,
+        );
+      if (dataClass.classKey) return dataClass.classKey;
+    }
+    return metricGroup.classKey;
   }
 
   /**

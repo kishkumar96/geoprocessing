@@ -11,6 +11,7 @@ import {
   MetricIdTypes,
   GroupMetricSketchAgg,
   MetricDimensions,
+  SketchProperties,
 } from "../types/index.js";
 
 import {
@@ -322,14 +323,19 @@ const classSortAlphaDisplay = (a: DataClass, b: DataClass) => {
 
 /**
  * Matches numerator metrics with denominator metrics and divides their value,
- * returning a new array of percent metrics.  If denominator metric has value of 0, returns NaN
+ * returning a new array of percent metrics.
  * Matches on the optional idProperty given, otherwise defaulting to classId
  * Deep copies and maintains all other properties from the numerator metric
+ * If denominator metric has value of 0, returns NaN
+ *   NaN allows downstream consumers to understand this isn't just any 0.
+ *   It's an opportunity to tell the user that no matter where they put their sketch, there is no way for the value to be more than zero.
+ *   For example, the ClassTable component looks for `NaN` metric values and will automatically display 0%,
+ *   along with an informative popover explaining that no data class features are within the current geography.
  * @param numerators array of metrics, to be used as numerators (often sketch metrics)
  * @param denominators array of metrics, to be used as denominators (often planning region metrics)
  * @param metricIdOverride optional metricId value to assign to outputted metrics
  * @param idProperty optional id property to match metric with total metric, defaults to classId
- * @returns Metric[] of percent values
+ * @returns Metric[] of percent values or NaN if denominator was 0
  */
 export const toPercentMetric = (
   numerators: Metric[],
@@ -429,14 +435,14 @@ export const nestMetrics = (
  * where each object contains sketch id, sketch name, and all metric values for each class
  * @param metrics List of metrics, expects one metric per sketch and class combination
  * @param classes Data classes represented in metrics
- * @param sketches Sketches contained in metrics
+ * @param sketchProperties SketchProperties of sketches represented in metrics
  * @param sortFn Function to sort class configs using Array.sort (defaults to alphabetical by display name)
  * @returns An array of objects with flattened sketch metrics
  */
 export const flattenBySketchAllClass = (
   metrics: Metric[],
   classes: DataClass[],
-  sketches: Sketch[] | NullSketch[],
+  sketchProperties: SketchProperties[],
   sortFn?: (a: DataClass, b: DataClass) => number,
 ): Record<string, string | number>[] => {
   const metricsByClassId = groupBy(
@@ -446,7 +452,7 @@ export const flattenBySketchAllClass = (
 
   const sketchRows: Record<string, string | number>[] = [];
 
-  for (const curSketch of sketches) {
+  for (const curSketchProperties of sketchProperties) {
     // For current sketch, transform classes into an object mapping classId to its one metric value
     const classMetricAgg = classes
       .sort(sortFn || classSortAlphaDisplay)
@@ -461,14 +467,14 @@ export const flattenBySketchAllClass = (
 
         // Map current classId to extracted metric value
         aggSoFar[curClass.classId] =
-          sketchMetricsById[curSketch.properties.id].value;
+          sketchMetricsById[curSketchProperties.id].value;
 
         return aggSoFar;
       }, {});
 
     sketchRows.push({
-      sketchId: curSketch.properties.id,
-      sketchName: curSketch.properties.name,
+      sketchId: curSketchProperties.id,
+      sketchName: curSketchProperties.name,
       ...classMetricAgg,
     });
   }

@@ -21,7 +21,7 @@
 | ------ | ------ |
 | [BaseImportDatasourceConfig](interfaces/BaseImportDatasourceConfig.md) | - |
 | [CalcStatsOptions](interfaces/CalcStatsOptions.md) | options accepted by geoblaze.stats() to calc-stats library See https://github.com/DanielJDufour/calc-stats/tree/main?tab=readme-ov-file#advanced-usage |
-| [ClipOptions](interfaces/ClipOptions.md) | Optional parameters for preprocessor function |
+| [ClipOptions](interfaces/ClipOptions.md) | Optional parameters for polygon clip preprocessor |
 | [DatasourceClipOperation](interfaces/DatasourceClipOperation.md) | Parameters for clip operation using a datasource |
 | [DatasourceOptions](interfaces/DatasourceOptions.md) | - |
 | [DefaultExtraParams](interfaces/DefaultExtraParams.md) | Common set of extra parameters that might be passed to a geoprocessing function Replace or extend these as needed, there is nothing special about the param names other than to be descriptive of what they represent. |
@@ -30,6 +30,7 @@
 | [FeatureCollection](interfaces/FeatureCollection.md) | A collection of feature objects. https://tools.ietf.org/html/rfc7946#section-3.3 |
 | [FeatureMap](interfaces/FeatureMap.md) | A simple map of features keyed by their name |
 | [FeatureTree](interfaces/FeatureTree.md) | - |
+| [FgBoundingBox](interfaces/FgBoundingBox.md) | - |
 | [GeogProp](interfaces/GeogProp.md) | - |
 | [GeometryCollection](interfaces/GeometryCollection.md) | Geometry Collection https://tools.ietf.org/html/rfc7946#section-3.1.8 |
 | [GeoprocessingHandlerOptions](interfaces/GeoprocessingHandlerOptions.md) | - |
@@ -52,6 +53,7 @@
 | [Node](interfaces/Node.md) | - |
 | [NullSketch](interfaces/NullSketch.md) | - |
 | [NullSketchCollection](interfaces/NullSketchCollection.md) | - |
+| [OverlapRasterOptions](interfaces/OverlapRasterOptions.md) | options accepted by rasterStats |
 | [PercentEdgeOptions](interfaces/PercentEdgeOptions.md) | - |
 | [Point](interfaces/Point.md) | Point geometry object. https://tools.ietf.org/html/rfc7946#section-3.1.2 |
 | [Polygon](interfaces/Polygon.md) | Polygon geometry object. https://tools.ietf.org/html/rfc7946#section-3.1.6 |
@@ -109,16 +111,21 @@
 | [classIdMapping](functions/classIdMapping.md) | Returns mapping of class ID to class DataClass objects |
 | [classifyMPA](functions/classifyMPA.md) | Given zone scores, returns object containing final scores, and mpa classification |
 | [classifyZone](functions/classifyZone.md) | Given activity scores, returns zone number |
+| [cleanBBox](functions/cleanBBox.md) | Normalizes bounding box longitude values to the [-180, 180] range if they cross the antimeridian |
 | [cleanCoords](functions/cleanCoords.md) | Cleans geojson coordinates to be within the bounds of the world [-90, -180, 90, 180], so that they don't wrap off the end, and can be split |
-| [clip](functions/clip.md) | Performs clip operation on features |
-| [clipMultiMerge](functions/clipMultiMerge.md) | Performs clip by merging features2 coords into a single multipolygon. Useful when you need features2 to be seen as a single unit when clipping feature1 (e.g. intersection) |
-| [clipToPolygonFeatures](functions/clipToPolygonFeatures.md) | Takes a Polygon feature and returns the portion remaining after performing clipOperations If results in multiple polygons then returns the largest |
+| [clip](functions/clip.md) | Performs one of 4 different clip operations on features |
+| [clipMultiMerge](functions/clipMultiMerge.md) | Performs clip after first merging features2 coords into a single multipolygon. Avoids errors in underlying clipping library when too many features in features2 |
+| [clipToPolygonDatasources](functions/clipToPolygonDatasources.md) | Takes a Polygon feature and returns the portion remaining after performing clipOperations against one or more datasources |
+| [clipToPolygonFeatures](functions/clipToPolygonFeatures.md) | Takes a Polygon feature and returns the portion remaining after performing clipOperations against one or more Polygon features |
 | [collectionHasGeometry](functions/collectionHasGeometry.md) | - |
 | [createMetric](functions/createMetric.md) | Creates a new metric. Defaults to ID values of null and then copies in passed metric properties |
 | [createMetrics](functions/createMetrics.md) | Creates fully defined metrics from partial. Metric values not provided are initialized to null |
+| [ensureValidPolygon](functions/ensureValidPolygon.md) | Returns true if feature is valid and meets requirements set by options. |
 | [featureToSketch](functions/featureToSketch.md) | Converts Feature to Sketch with reasonable defaults given for sketch properties if not provided |
 | [featureToSketchCollection](functions/featureToSketchCollection.md) | Converts FeatureCollection to SketchCollection with reasonable defaults given for sketch properties if not provided |
 | [fetchGeoJSON](functions/fetchGeoJSON.md) | Given geoprocessing function request, fetches the GeoJSON, which can also be sketch JSON |
+| [fgbFetchAll](functions/fgbFetchAll.md) | Fetch features from flatgeobuf at url within bounding box Awaits all features before returning, rather than streaming them. |
+| [fgBoundingBox](functions/fgBoundingBox.md) | - |
 | [findAndUpdateMetricValue](functions/findAndUpdateMetricValue.md) | Returns new sketchMetrics array with first sketchMetric matched set with new value. If no match, returns copy of sketchMetrics. Does not mutate array in place. |
 | [firstMatching](functions/firstMatching.md) | Returns the first item that returns true for filter |
 | [firstMatchingMetric](functions/firstMatchingMetric.md) | Returns the first metric that returns true for metricFilter |
@@ -127,9 +134,11 @@
 | [flattenBySketchAllClass](functions/flattenBySketchAllClass.md) | Flattens class sketch metrics into array of objects, one for each sketch, where each object contains sketch id, sketch name, and all metric values for each class |
 | [flattenSketchAllId](functions/flattenSketchAllId.md) | Returns one aggregate object for every sketch ID present in metrics, with additional property for each unique value for idProperty present for sketch. Example - idProperty of 'classId', and two classes are present in metrics of 'classA', and 'classB' then each flattened object will have two extra properties per sketch, .classA and .classB, each with the first metric value for that sketch/idProperty found |
 | [gearTypeScore](functions/gearTypeScore.md) | - |
+| [genClipLoader](functions/genClipLoader.md) | Given a project client and 1 or more clip operations, returns a function that when called loads clip features from their datasources that overlap with the feature polygon to clip. Pass this function to genPreprocessor() and it will take care of the rest. |
+| [genClipToPolygonDatasources](functions/genClipToPolygonDatasources.md) | Returns a function that Takes a Polygon feature and returns the portion remaining after performing clipOperations against one or more datasources |
+| [genClipToPolygonFeatures](functions/genClipToPolygonFeatures.md) | Returns a function that applies clip operations to a feature using other polygon features. |
 | [genFeature](functions/genFeature.md) | Returns a Feature with given features geometry and properties. Reasonable defaults are given for properties not provided Default geometry is a square from 0,0 to 1,1 |
 | [genFeatureCollection](functions/genFeatureCollection.md) | Given array of features, return a feature collection with given properties. Generates reasonable default values for any properties not passed in The geometry type of the returned collection will match the one passed in Properties of features are retained |
-| [genPreprocessor](functions/genPreprocessor.md) | Returns a preprocessor function given clipLoader function |
 | [genRandomPolygons](functions/genRandomPolygons.md) | Generates random polygons within provided bounds. numPolygons defaults to 300, max_radial_length to 0.5 Wrapper around @turf/random - https://turfjs.org/docs/#randomPolygon |
 | [genSampleNullSketch](functions/genSampleNullSketch.md) | Returns a Sketch with given geometry and Geometry type, Properties are reasonable random |
 | [genSampleNullSketchCollection](functions/genSampleNullSketchCollection.md) | Given feature collection, return a sketch collection with reasonable random props. The geometry type of the returned collection will match the one passed in |
@@ -142,13 +151,15 @@
 | [genSketchCollection](functions/genSketchCollection.md) | Given array of sketches, return a sketch collection with given properties. Generates reasonable default values for any properties not passed in The geometry type of the returned collection will match the one passed in Properties of sketches are retained |
 | [genTaskCacheKey](functions/genTaskCacheKey.md) | Generates a cache key for a geoprocessing request, given sketch properties and optional extra parameters (must be JSON compatible object) Extra parameters are canonicalized and hashed using md5 to ensure cache key is consistent. Canonicalization ensures object keys are consistent but not arrays. If you use arrays as extraParam values, make sure the order stays the same and sort first if needed to generate a consistent cache key. |
 | [genZodErrorMessage](functions/genZodErrorMessage.md) | - |
-| [getArea](functions/getArea.md) | Returns area of valid cells (not nodata) overlapping with feature. If no valid cells found, returns 0. |
+| [getArea](functions/getArea.md) | Returns area of valid raster cells (not nodata) overlapping with feature. If no valid cells found, returns 0. |
 | [getClassificationLabel](functions/getClassificationLabel.md) | - |
 | [getCogFilename](functions/getCogFilename.md) | - |
 | [getDatasetBucketName](functions/getDatasetBucketName.md) | - |
 | [getDatasourceById](functions/getDatasourceById.md) | find and return datasource from passed datasources |
 | [getExternalRasterDatasourceById](functions/getExternalRasterDatasourceById.md) | find and return external raster datasource from passed datasources |
 | [getExternalVectorDatasourceById](functions/getExternalVectorDatasourceById.md) | find and return external vector datasource from passed datasources |
+| [getFeatures](functions/getFeatures.md) | Returns features for a variety of vector datasources and formats, with additional filter options |
+| [getFeaturesForSketchBBoxes](functions/getFeaturesForSketchBBoxes.md) | Loads features from a FlatGeobuf referenced by URL, which intersect the bounding boxes of each individual sketch in a SketchCollection, or a single Sketch. |
 | [getFirstFromParam](functions/getFirstFromParam.md) | Returns first element from param object at paramName key. Parameter can be string or array of strings |
 | [getFlatGeobufFilename](functions/getFlatGeobufFilename.md) | Returns datasource filename in flatgeobuf format |
 | [getFlatGeobufPath](functions/getFlatGeobufPath.md) | - |
@@ -165,8 +176,8 @@
 | [getJsonPath](functions/getJsonPath.md) | - |
 | [getJsonUserAttribute](functions/getJsonUserAttribute.md) | - |
 | [getKeys](functions/getKeys.md) | Object.keys helper that returns strongly typed key values. Uses assertion so make sure your type covers all the keys! |
-| [getMetricGroupObjectiveId](functions/getMetricGroupObjectiveId.md) | Returns the top-level objective assigned for the given MetricGroup. If a classID is also passed, returns the objective ID for that class within the metric group |
-| [getMetricGroupObjectiveIds](functions/getMetricGroupObjectiveIds.md) | Returns array of all objective IDs configured for the given MetricGroup. If a class does not have an objectiveId assigned, then it gets the top-level objectiveId |
+| [getMetricGroupObjectiveId](functions/getMetricGroupObjectiveId.md) | Returns the objectiveId assigned to the given MetricGroup. If classId provided, returns the objective ID assigned to data class with that classId, else fallback to metricGroup objectiveId. |
+| [getMetricGroupObjectiveIds](functions/getMetricGroupObjectiveIds.md) | Returns array of objective IDs for the given MetricGroup. If at least one class has an objectiveId assigned, then it returns those, missing classes with no objectiveId get the top-level objectiveId If no class-level objectives are found, then it returns the top-level objectiveId If no objectives are found, returns an empty array |
 | [getMinYesCountMap](functions/getMinYesCountMap.md) | Returns an object mapping objective ID to ID of first classification that counts toward objective |
 | [getMpaClassificationName](functions/getMpaClassificationName.md) | Returns protection level given MPA classification index value |
 | [getObjectiveById](functions/getObjectiveById.md) | find and return objectives from passed objectives |
@@ -176,13 +187,16 @@
 | [getSketchCollectionChildIds](functions/getSketchCollectionChildIds.md) | Given sketch collection, returns IDs of sketches in the collection |
 | [getSketchFeatures](functions/getSketchFeatures.md) | Given sketch or sketch collection, returns just the individual sketch features inside. |
 | [getSketchToMpaProtectionLevel](functions/getSketchToMpaProtectionLevel.md) | Returns object mapping sketch id to MPA classification given sketch for rbcsMpa or collection of sketches for rbcsMpas with rbcs activity userAttributes, and area metrics for each sketch, assumes each mpa is a single zone mpa |
-| [getSum](functions/getSum.md) | Returns sum of value overlap with geometry. If no cells with a value are found within the geometry overlap, returns 0. |
+| [getSum](functions/getSum.md) | Returns sum of raster value overlap with geometry. If no cells with a value are found within the geometry overlap, returns 0. |
 | [getUserAttribute](functions/getUserAttribute.md) | UserAttributes are those filled in via the attributes form specified as part of a SketchClass. This getter function is easier to use than searching the Sketch.properties.userAttributes array, supports default values, and is easier to use with typescript. |
 | [getVectorDatasourceById](functions/getVectorDatasourceById.md) | find and return vector datasource (internal or external) from passed datasources |
 | [getZoneClassificationName](functions/getZoneClassificationName.md) | - |
 | [groupBy](functions/groupBy.md) | Similar to lodash groupBy |
 | [hasOwnProperty](functions/hasOwnProperty.md) | Type narrowing to allow property checking when object can be multiple types https://fettblog.eu/typescript-hasownproperty/ Any code inside a block guarded by a conditional call to this function will have type narrowed to X |
 | [includeVirtualSketch](functions/includeVirtualSketch.md) | If sketch collection passes sketchTest, then returns new collection with mergeSketchColl sketches appended and updated bbox |
+| [intersectInChunks](functions/intersectInChunks.md) | Calculates area overlap between a feature A and a feature array B. Intersection is done in chunks on featuresB to avoid errors due to too many features |
+| [intersectInChunksArea](functions/intersectInChunksArea.md) | Calculates area overlap between a feature A and a feature array B. Intersection is done in chunks on featuresB to avoid errors due to too many features |
+| [intersectSum](functions/intersectSum.md) | Sums the value of intersecting features. No support for partial, counts the whole feature |
 | [isExternalDatasource](functions/isExternalDatasource.md) | - |
 | [isExternalRasterDatasource](functions/isExternalRasterDatasource.md) | - |
 | [isExternalVectorDatasource](functions/isExternalVectorDatasource.md) | - |
@@ -220,6 +234,8 @@
 | [isTruthyAttributeValue](functions/isTruthyAttributeValue.md) | - |
 | [isVectorDatasource](functions/isVectorDatasource.md) | - |
 | [keyBy](functions/keyBy.md) | Similar to lodash keyBy |
+| [loadCog](functions/loadCog.md) | Returns cog-aware georaster at given url. Will not fetch raster values until subsequent geoblaze calls are made with a geometry and it will calculate the window to load based on the geometry. The subsequent geoblaze calls (e.g. sum) must be called async to allow the raster to load. |
+| [loadFgb](functions/loadFgb.md) | Fetch features from flatgeobuf at url that intersect with bounding box Awaits all features before returning, rather than streaming them. |
 | [maxWidth](functions/maxWidth.md) | Returns the maximum width of the geojson or bbox |
 | [metricsForSketch](functions/metricsForSketch.md) | Returns metrics for given sketch (can be an array of sketches) |
 | [metricsSketchIds](functions/metricsSketchIds.md) | Returns metrics with matching sketchId (can be an array of sketchids) |
@@ -229,12 +245,12 @@
 | [mpaClassMetric](functions/mpaClassMetric.md) | Given sketch for rbcsMpa with rbcs activity userAttributes, assumes mpa is a single zone mpa and returns metrics with mpa classification score |
 | [mpaClassMetrics](functions/mpaClassMetrics.md) | Given sketch for rbcsMpa or collection of sketches for rbcsMpas with rbcs activity userAttributes, assumes each mpa is a single zone mpa and returns metrics with mpa classification score Collection metric will have mpa classification score index as value |
 | [nestMetrics](functions/nestMetrics.md) | Recursively groups metrics by ID in order of ids specified to create arbitrary nested hierarchy for fast lookup. Caller responsible for all metrics having the ID properties defined If an id property is not defined on a metric, then 'undefined' will be used for the key |
+| [numberFormat](functions/numberFormat.md) | Formats number to string, if less than zero will leave as-is, otherwise will format as large number |
 | [overlapArea](functions/overlapArea.md) | Assuming sketches are within some outer boundary with size outerArea, calculates the area of each sketch and the proportion of outerArea they take up. |
 | [overlapAreaGroupMetrics](functions/overlapAreaGroupMetrics.md) | Generate overlap group metrics using overlapArea operation |
 | [overlapFeatures](functions/overlapFeatures.md) | Calculates overlap between sketch(es) and an array of polygon features. Supports area or sum operation (given sumProperty), defaults to area If sketch collection includes overall and per sketch |
 | [overlapFeaturesGroupMetrics](functions/overlapFeaturesGroupMetrics.md) | Generate overlap group metrics using overlapFeatures operation |
-| [overlapGroupMetrics](functions/overlapGroupMetrics.md) | Given area overlap metrics stratified by class and sketch, returns new metrics also stratified by group Assumes a sketch is member of only one group, determined by caller-provided metricToGroup For each group+class, calculates area of overlap between sketches in group and featuresByClass (with overlap between group sketches removed first) Types of metrics returned: sketch metrics: copy of caller-provided sketch metrics with addition of group ID overall metric for each group+class: takes sketches in group, subtracts overlap between them and overlap with higher group sketches, and runs operation If a group has no sketches in it, then no group metrics will be included for that group, and group+class metric will be 0 |
-| [overlapRaster](functions/overlapRaster.md) | Returns metrics representing sketch overlap with raster. If sketch collection, then calculate overlap for all child sketches also |
+| [overlapGroupMetrics](functions/overlapGroupMetrics.md) | Given overlap metrics stratified by class and sketch, returns new metrics also stratified by group Assumes a sketch is member of only one group, determined by caller-provided metricToGroup For each group+class, calculates area of overlap between sketches in group and featuresByClass (with overlap between group sketches removed first) Types of metrics returned: sketch metrics: copy of caller-provided sketch metrics with addition of group ID overall metric for each group+class: takes sketches in group, subtracts overlap between them and overlap with higher group sketches, and runs operation If a group has no sketches in it, then no group metrics will be included for that group, and group+class metric will be 0 |
 | [overlapRasterClass](functions/overlapRasterClass.md) | Calculates sum of overlap between sketches and a categorical raster with numeric values representing feature classes If sketch collection, then calculate overlap for all child sketches also |
 | [overlapRasterGroupMetrics](functions/overlapRasterGroupMetrics.md) | Generate overlap group metrics using rasterMetrics operation |
 | [overlapSubarea](functions/overlapSubarea.md) | Returns area stats for sketch input after performing overlay operation against a subarea feature. Includes both area overlap and percent area overlap metrics, because calculating percent later would be too complicated For sketch collections, dissolve is used when calculating total sketch area to prevent double counting |
@@ -245,17 +261,18 @@
 | [percentWithEdge](functions/percentWithEdge.md) | Special percent formatter designed to produce readable percent values for display with special handling of numbers within some edge range of user-defined lower or upper bounds. Defaults to handle only lower edge with lowerBound = 0 and lower = .001. All bound values are expected to be in decimal percent. So 1/10th of a percent is .001 |
 | [randomFloat](functions/randomFloat.md) | - |
 | [randomInt](functions/randomInt.md) | - |
-| [rasterMetrics](functions/rasterMetrics.md) | Calculates stats on the provided raster and returns as an array of Metric objects (defaults to sum stat) If sketch, then calculate overlap metrics, sketch collection will calculate metrics for each individual sketch within |
-| [rasterStats](functions/rasterStats.md) | Calculates over 10 different raster stats, optionally constrains to raster cells overlapping with feature. Defaults to calculating only sum stat If no cells found, returns 0 or null value for each stat as appropriate. |
-| [rasterStatsToMetrics](functions/rasterStatsToMetrics.md) | Converts an array of geoblaze raster StatsObjects to an array of Metrics |
+| [rasterMetrics](functions/rasterMetrics.md) | Calculates summary metrics (stats/area) on given raster, optionally intersecting raster with provided feature (zonal statistics). If feature is a collection, then calculate metrics for each individual feature as well as the collection as a whole. This can be disabled with includeChildMetrics: false. Defaults to assuming a continuous raster but also supports categorical option |
+| [rasterStats](functions/rasterStats.md) | Calculates over 10 different raster statistics, optionally constrains to raster cells overlapping with feature (zonal statistics). Defaults to calculating only sum stat If no cells found, returns 0 or null value for each stat as appropriate. |
+| [rasterStatsToMetrics](functions/rasterStatsToMetrics.md) | Converts an array of geoblaze raster StatsObject to an array of Metrics |
 | [rbcsMpaToMetric](functions/rbcsMpaToMetric.md) | - |
 | [rbcsZoneToMetric](functions/rbcsZoneToMetric.md) | Transforms an rbcs zone object to a metric |
 | [rekeyMetrics](functions/rekeyMetrics.md) | Reorders metrics (by mutation) to a consistent key order for readability |
 | [rekeyObject](functions/rekeyObject.md) | Reorders object, mutating in place, in the order provided |
 | [removeSketchCollPolygonHoles](functions/removeSketchCollPolygonHoles.md) | - |
 | [removeSketchPolygonHoles](functions/removeSketchPolygonHoles.md) | - |
-| [roundDecimal](functions/roundDecimal.md) | Rounds a number to a fixed precision |
-| [roundLower](functions/roundLower.md) | Formats number to string, rounding decimal to number of digits, with special handling of minimum bound |
+| [roundDecimal](functions/roundDecimal.md) | Rounds number to a fixed number of decimals |
+| [roundDecimalFormat](functions/roundDecimalFormat.md) | Rounds number to a fixed number of decimals, then formats as a human readable string |
+| [roundLower](functions/roundLower.md) | Formats number to string, rounding decimal to number of digits, if value is less than lower will clamp to lower value |
 | [runLambdaWorker](functions/runLambdaWorker.md) | Runs a function on a specified lambda worker |
 | [sampleSketchReportContextValue](functions/sampleSketchReportContextValue.md) | Creates a ReportContextValue object for a Sketch with sample values. overrides will be merged in, replacing default values |
 | [scanTasks](functions/scanTasks.md) | - |
@@ -263,19 +280,22 @@
 | [sketchToZone](functions/sketchToZone.md) | - |
 | [sortMetrics](functions/sortMetrics.md) | Sorts metrics to a consistent order for readability Defaults to [metricId, classId, sketchId] |
 | [sortMetricsDisplayOrder](functions/sortMetricsDisplayOrder.md) | Sorts metrics by ID given a user-defined metric dimension (sortId) and array of ID values in the order they should be sorted Useful for applying a "display order" to metrics Example - sortId = classId, displayOrder = ['sand','gravel','coral'] |
-| [splitFeatureAntimeridian](functions/splitFeatureAntimeridian.md) | Splits a Feature or FeatureCollection on the 180 degree antimeridian |
-| [splitSketchAntimeridian](functions/splitSketchAntimeridian.md) | Splits a Sketch or SketchCollection on the 180 degree antimeridian |
-| [squareMeterToKilometer](functions/squareMeterToKilometer.md) | - |
-| [squareMeterToMile](functions/squareMeterToMile.md) | - |
+| [splitBBoxAntimeridian](functions/splitBBoxAntimeridian.md) | If bounding box crosses antimeridian (and extends outside the range of -180 to 180), split it into two bounding boxes at the antimeridian. |
+| [splitFeatureAntimeridian](functions/splitFeatureAntimeridian.md) | Splits a Feature or FeatureCollection on the 180 degree antimeridian. The bbox property of the result will have longitude coordinates that are shifted/normalized to be within the range of -180 to 180. |
+| [splitSketchAntimeridian](functions/splitSketchAntimeridian.md) | Splits a Sketch or SketchCollection on the 180 degree antimeridian The bbox property of the result will have longitude coordinates that are shifted/normalized to be within the range of -180 to 180. |
+| [squareMeterToKilometer](functions/squareMeterToKilometer.md) | Converts value from square meters to square kilometers |
+| [squareMeterToMile](functions/squareMeterToMile.md) | Converts value from square meters to square miles |
 | [testWithinPerc](functions/testWithinPerc.md) | Expects that testValue is equal to expectedValue or optionally within percentage (defaults to .01 or 1%) |
+| [toChildProperties](functions/toChildProperties.md) | Returns SketchProperties for each child sketch in a SketchCollection |
 | [toFeatureArray](functions/toFeatureArray.md) | Helper to convert a Feature or a FeatureCollection to a Feature array |
 | [toFeaturePolygonArray](functions/toFeaturePolygonArray.md) | - |
 | [toNullSketch](functions/toNullSketch.md) | Returns sketch or sketch collection with null geometry |
 | [toNullSketchArray](functions/toNullSketchArray.md) | Helper to convert a NullSketch or NullSketchCollection to a NullSketch array |
-| [toPercentMetric](functions/toPercentMetric.md) | Matches numerator metrics with denominator metrics and divides their value, returning a new array of percent metrics. If denominator metric has value of 0, returns NaN Matches on the optional idProperty given, otherwise defaulting to classId Deep copies and maintains all other properties from the numerator metric |
+| [toPercentMetric](functions/toPercentMetric.md) | Matches numerator metrics with denominator metrics and divides their value, returning a new array of percent metrics. Matches on the optional idProperty given, otherwise defaulting to classId Deep copies and maintains all other properties from the numerator metric If denominator metric has value of 0, returns NaN NaN allows downstream consumers to understand this isn't just any 0. It's an opportunity to tell the user that no matter where they put their sketch, there is no way for the value to be more than zero. For example, the ClassTable component looks for `NaN` metric values and will automatically display 0%, along with an informative popover explaining that no data class features are within the current geography. |
 | [toRasterProjection](functions/toRasterProjection.md) | Reprojects a feature to the same projection as the raster. |
 | [toShortSketches](functions/toShortSketches.md) | Returns an array of shorthand sketches (id + name) given a Sketch or SketchCollection. Includes a shorthand of parent collection also |
-| [toSketchArray](functions/toSketchArray.md) | Helper to convert a Sketch or SketchCollection to a Sketch array, maintaining geometry type |
+| [toSketchArray](functions/toSketchArray.md) | Converts a Sketch or SketchCollection to a Sketch array, maintaining geometry type Useful for putting in a consistent form that can be iterated over |
+| [toSketchPropertiesArray](functions/toSketchPropertiesArray.md) | Converts array of sketches to an array of their SketchProperties |
 | [unpackMetrics](functions/unpackMetrics.md) | Converts MetricPack to a new Metric array. |
 | [updateCommandsSync](functions/updateCommandsSync.md) | Run dynamodb update commands synchronously to avoid throttling, retrying on ThroughputError |
 | [valueFormatter](functions/valueFormatter.md) | Given a number or string value and the name of a formatter function, returns a formatted value |
@@ -334,7 +354,7 @@
 | [max](type-aliases/max.md) | - |
 | [mean](type-aliases/mean.md) | - |
 | [median](type-aliases/median.md) | - |
-| [Metric](type-aliases/Metric.md) | Represents a single record of a metric with a value, stratified by one or more dimensions. The naming is a bit of a misnomer, you can think of it as a MetricValue |
+| [Metric](type-aliases/Metric.md) | Single record of value, stratified in one or more dimensions. The name Metric is an overgeneralization, you can think of it as a MetricValue. |
 | [MetricDimension](type-aliases/MetricDimension.md) | - |
 | [MetricGroup](type-aliases/MetricGroup.md) | Represents a single metric, having one DataGroup |
 | [MetricGroups](type-aliases/MetricGroups.md) | - |
@@ -414,6 +434,7 @@
 | [geoprocessingConfigSchema](variables/geoprocessingConfigSchema.md) | Represents a single JS package |
 | [geoTypesSchema](variables/geoTypesSchema.md) | - |
 | [globalDatasources](variables/globalDatasources.md) | Definitive list of global datasources for geoprocessing framework @todo: fetch from global-datasources repo |
+| [globalDatasourcesById](variables/globalDatasourcesById.md) | - |
 | [highColor](variables/highColor.md) | - |
 | [HIGHLY\_PROTECTED\_LEVEL](variables/HIGHLY_PROTECTED_LEVEL.md) | - |
 | [importRasterDatasourceOptionsSchema](variables/importRasterDatasourceOptionsSchema.md) | - |

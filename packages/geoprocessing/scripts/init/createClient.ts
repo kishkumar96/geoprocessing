@@ -14,7 +14,7 @@ async function createClient() {
     {
       type: "input",
       name: "title",
-      message: "Name for this client, in PascalCase",
+      message: "Name for this , in PascalCase (e.g. CoralReefCard",
       validate: (value) =>
         /^\w+$/.test(value) ? true : "Please use only alphabetical characters",
       transformer: (value) => pascalcase(value),
@@ -79,7 +79,7 @@ export async function makeClient(
     `${templateClientPath}/SimpleReport.tsx`,
   );
   const testClientCode = await fs.readFile(
-    `${templateClientPath}/SimpleReport.stories.tsx`,
+    `${templateClientPath}/SimpleReport.example-stories.ts`,
   );
 
   // Add client to geoprocessing.json
@@ -118,7 +118,7 @@ export async function makeClient(
   );
 
   await fs.writeFile(
-    `${projectClientPath}/${options.title}.stories.tsx`,
+    `${projectClientPath}/${options.title}.example-stories.ts`,
     testClientCode.toString().replaceAll("SimpleReport", options.title),
   );
 
