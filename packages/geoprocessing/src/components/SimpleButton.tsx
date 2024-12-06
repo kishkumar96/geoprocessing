@@ -5,10 +5,7 @@ export const SimpleButtonStyled = styled.button`
   background: transparent;
   border: none;
   cursor: pointer;
-  outline: none;
-  color: #aaa;
-  font-size: 18px
-  font-weight: bold
+  color: #767676;
   &:hover {
     color: #333;
   }

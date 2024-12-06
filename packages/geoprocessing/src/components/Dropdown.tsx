@@ -58,10 +58,11 @@ export const DropdownTrigger = styled.button`
   border: none;
   background: none;
   font-family: sans-serif;
+  cursor: pointer;
 `;
 
 export const Dropdown = ({
-  titleElement: TitleElement = <></>,
+  titleElement = <></>,
   placement = "auto",
   offset = { horizontal: 0, vertical: 0 },
   children,
@@ -101,25 +102,32 @@ export const Dropdown = ({
   }
 
   return (
-    <React.StrictMode>
-      <div ref={DropownRef}>
-        <DropdownTrigger
-          type="button"
-          ref={referenceRef}
-          onClick={handleDropdownClick}
+    <div ref={DropownRef} aria-label="Dropdown">
+      <DropdownTrigger
+        ref={referenceRef}
+        onClick={handleDropdownClick}
+        aria-label={`${open ? "Close" : "Open"} dropdown menu`}
+        aria-expanded={open}
+      >
+        {titleElement}
+      </DropdownTrigger>
+      <div
+        ref={popperRef}
+        style={{ zIndex: 1000, ...styles.popper }}
+        {...attributes.popper}
+      >
+        <DropdownContainer
+          style={styles.offset}
+          open={open}
+          aria-label="Dropdown Menu"
         >
-          {TitleElement}
-        </DropdownTrigger>
-      </div>
-      <div ref={popperRef} style={styles.popper} {...attributes.popper}>
-        <DropdownContainer style={styles.offset} open={open}>
           {children &&
             React.Children.map(children, (child) => {
               return <DropdownItem>{child}</DropdownItem>;
             })}
         </DropdownContainer>
       </div>
-    </React.StrictMode>
+    </div>
   );
 };
 

@@ -2,7 +2,7 @@ import React, { ReactNode } from "react";
 import { styled } from "styled-components";
 
 export const StyledPill = styled.span`
-  background-color: ${(props) => (props.color ? props.color : "#CCC")};
+  background-color: ${(props) => props.color || "#CCC"};
   border-radius: 6px;
   padding: 3px 5px;
 `;
@@ -48,17 +48,29 @@ export const GroupPill: React.FunctionComponent<GroupPillProps> = ({
   groupColorMap,
   children,
 }) => {
-  return <Pill color={groupColorMap[group]}>{children}</Pill>;
+  return (
+    <Pill color={groupColorMap[group]} aria-label={`Group: ${group}`}>
+      {children}
+    </Pill>
+  );
 };
 
 export const WarningPill: React.FunctionComponent<{ children: ReactNode }> = ({
   children,
 }) => {
-  return <Pill color={"#FFE1A3"}>{children}</Pill>;
+  return (
+    <Pill color={"#FFE1A3"} aria-label="Warning Highlight">
+      {children}
+    </Pill>
+  );
 };
 
 export const GreenPill: React.FunctionComponent<{ children: ReactNode }> = ({
   children,
 }) => {
-  return <Pill color={"#BEE4BE"}>{children}</Pill>;
+  return (
+    <Pill aria-label={"Green Highlight"} color={"#BEE4BE"}>
+      {children}
+    </Pill>
+  );
 };
