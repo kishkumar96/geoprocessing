@@ -69,11 +69,11 @@ export async function vectorFunction(
         });
 
         let finalFeatures: Feature<Polygon | MultiPolygon>[] = [];
-        if (!classKey || curClass.classId === `${ds.datasourceId}_all`)
-          // If no classKey defined, then this is probably a metric group of one class, use all features
+        if (classKey === undefined)
+          // Use all features
           finalFeatures = features;
         else {
-          // else filter to features that are a member of this class
+          // Filter to features that are a member of this class
           finalFeatures = features.filter(
             (feat) =>
               feat.geometry &&
