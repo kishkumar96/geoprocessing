@@ -28,7 +28,7 @@ async function bundleAssets() {
 
   // Delete old assets if they exist
   if (fs.existsSync(path.join(distAssetsPath))) {
-    fs.rmdirSync(distAssetsPath, { recursive: true });
+    fs.rmSync(distAssetsPath, { recursive: true });
   }
 
   if (!fs.existsSync(path.join(distAssetsPath))) {
@@ -53,7 +53,7 @@ async function bundleBaseProject() {
 
   // Delete old template bundles if they exist
   if (fs.existsSync(path.join(distBaseProjectPath))) {
-    fs.rmdirSync(distBaseProjectPath, { recursive: true });
+    fs.rmSync(distBaseProjectPath, { recursive: true });
   }
 
   try {
@@ -82,7 +82,7 @@ async function bundleTemplates(templateType: TemplateType) {
 
   // Delete old template bundles if they exist
   if (fs.existsSync(path.join(distTemplatesPath))) {
-    fs.rmdirSync(distTemplatesPath, { recursive: true });
+    fs.rmSync(distTemplatesPath, { recursive: true });
   }
   // Stub out template dir
   fs.ensureDir(distTemplatesPath);
@@ -159,7 +159,7 @@ async function bundleTemplates(templateType: TemplateType) {
         path.join(distTemplatePath, "src", "clients"),
       );
       if (fs.existsSync(`${distTemplatePath}/src/clients/.story-cache`)) {
-        await fs.rmdir(`${distTemplatePath}/src/clients/.story-cache`, {
+        await fs.rm(`${distTemplatePath}/src/clients/.story-cache`, {
           recursive: true,
         });
       }
@@ -174,7 +174,7 @@ async function bundleTemplates(templateType: TemplateType) {
         path.join(distTemplatePath, "src", "components"),
       );
       if (fs.existsSync(`${distTemplatePath}/src/components/.story-cache`)) {
-        await fs.rmdir(`${distTemplatePath}/src/components/.story-cache`, {
+        await fs.rm(`${distTemplatePath}/src/components/.story-cache`, {
           recursive: true,
         });
       }
