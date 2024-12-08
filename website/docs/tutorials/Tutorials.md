@@ -8,7 +8,6 @@ Setup options:
 
 - MacOS
   - [Virtual install with Docker Desktop](#virtual-install-with-docker-desktop)
-  - [Direct Install on MacOS](#macos-direct-install)
 - Windows
   - [Virtual install with Windows Subsystem for Linux (WSL)](#windows-wsl-install)
   - [Virtual install with Docker Desktop](#virtual-install-with-docker-desktop)
@@ -75,33 +74,6 @@ To exit your devcontainer:
   - type "Dev Containers: Rebuild Without Cache and Reopen In Container"
 
 See devcontainer advanced usage [guide](../devcontainer/devcontainer.md) to learn more or the [upgrade](../upgrade.md) tutorial
-
-## MacOS Direct Install
-
-Requirement: 11.6.8 Big Sur or newer
-
-Install all software dependencies directly on your Apple machine running the MacOS operating system:
-
-- Install [Node JS](https://nodejs.org/en/download/) >= <NodeVersion />
-  - [nvm](https://github.com/nvm-sh/nvm) is great for this
-    - First, install nvm. May ask you to first install XCode developer tools which is available through the App Store or follow the instructions provided.
-    - Then <code>nvm install v<NodeVersion /></code>.
-  - Then open your Terminal app of choice and run `node -v` to check your node version
-- Install latest [NPM](https://www.npmjs.com/) package manager after installing node.
-  - `npm --version` to check
-  - `npm install -g latest`
-- Install [VS Code](https://code.visualstudio.com)
-
-  - Install recommended [extensions](https://code.visualstudio.com/docs/editor/extension-marketplace) when prompted. If not prompted, go to the `Extensions` panel on the left side and install the extensions named in [this file](https://github.com/seasketch/geoprocessing/blob/dev/packages/geoprocessing/templates/project/.vscode/extensions.json)
-
-- Install [GDAL](https://gdal.org/)
-
-  - First install [homebrew](https://brew.sh/)
-  - `brew install gdal`
-
-- Install [Java runtime](https://www.java.com/en/download/) for MacOS (required for testing with Amazon DynamoDb Local)
-
-- Create a free Github account if you don't have one already
 
 ## Windows WSL Install
 
