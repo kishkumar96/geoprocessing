@@ -236,6 +236,7 @@
 | [keyBy](functions/keyBy.md) | Similar to lodash keyBy |
 | [loadCog](functions/loadCog.md) | Returns cog-aware georaster at given url. Will not fetch raster values until subsequent geoblaze calls are made with a geometry and it will calculate the window to load based on the geometry. The subsequent geoblaze calls (e.g. sum) must be called async to allow the raster to load. |
 | [loadFgb](functions/loadFgb.md) | Fetch features from flatgeobuf at url that intersect with bounding box Awaits all features before returning, rather than streaming them. |
+| [loadFgbFromDisk](functions/loadFgbFromDisk.md) | Synchronously load a flatgeobuf file from disk. Assumed to be in WGS84 EPSG:4326 projection |
 | [maxWidth](functions/maxWidth.md) | Returns the maximum width of the geojson or bbox |
 | [metricsForSketch](functions/metricsForSketch.md) | Returns metrics for given sketch (can be an array of sketches) |
 | [metricsSketchIds](functions/metricsSketchIds.md) | Returns metrics with matching sketchId (can be an array of sketchids) |

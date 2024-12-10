@@ -92,6 +92,11 @@ const typedocSidebar = { items: [
           },
           {
             "type": "doc",
+            "id": "api/client-ui/interfaces/ErrorStatusProps",
+            "label": "ErrorStatusProps"
+          },
+          {
+            "type": "doc",
             "id": "api/client-ui/interfaces/FilterSelect",
             "label": "FilterSelect"
           },
@@ -129,11 +134,6 @@ const typedocSidebar = { items: [
             "type": "doc",
             "id": "api/client-ui/interfaces/HorizontalStackedBarProps",
             "label": "HorizontalStackedBarProps"
-          },
-          {
-            "type": "doc",
-            "id": "api/client-ui/interfaces/InfoStatusProps",
-            "label": "InfoStatusProps"
           },
           {
             "type": "doc",
@@ -264,6 +264,11 @@ const typedocSidebar = { items: [
             "type": "doc",
             "id": "api/client-ui/interfaces/SketchClassTableProps",
             "label": "SketchClassTableProps"
+          },
+          {
+            "type": "doc",
+            "id": "api/client-ui/interfaces/StatusProps",
+            "label": "StatusProps"
           },
           {
             "type": "doc",
@@ -405,6 +410,11 @@ const typedocSidebar = { items: [
             "type": "doc",
             "id": "api/client-ui/functions/DropdownTrigger",
             "label": "DropdownTrigger"
+          },
+          {
+            "type": "doc",
+            "id": "api/client-ui/functions/ErrorStatus",
+            "label": "ErrorStatus"
           },
           {
             "type": "doc",
@@ -1920,6 +1930,11 @@ const typedocSidebar = { items: [
             "type": "doc",
             "id": "api/geoprocessing/functions/loadFgb",
             "label": "loadFgb"
+          },
+          {
+            "type": "doc",
+            "id": "api/geoprocessing/functions/loadFgbFromDisk",
+            "label": "loadFgbFromDisk"
           },
           {
             "type": "doc",

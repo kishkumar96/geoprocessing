@@ -47,3 +47,9 @@ Re-exports [loadCog](../geoprocessing/functions/loadCog.md)
 ### loadFgb
 
 Re-exports [loadFgb](../geoprocessing/functions/loadFgb.md)
+
+***
+
+### loadFgbFromDisk
+
+Re-exports [loadFgbFromDisk](../geoprocessing/functions/loadFgbFromDisk.md)
