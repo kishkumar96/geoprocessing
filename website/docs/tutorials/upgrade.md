@@ -103,6 +103,8 @@ docker pull seasketch/geoprocessing-workspace:unstable
 
 Then, when restarting your VSCode devcontainer, choose the `unstable` version.
 
+If you get an error when starting unstable, make sure that you have a .env file in your `local-dev-unstable` directory. You need to have one there, just as in the top-level stable devcontainer directory.
+
 ### When Using Geoprocessing Less Than 7.0
 
 The latest version of the `geoprocessing-workspace` will only work with geoprocessing 7.x projects. This is due to a change in how GDAL produces flatgeobuf files. If you suddenly see errors of `"Not a FlatGeobuf file"` when trying to read your file, this is likely the reason. In order to continue to develop older 6.x and lower geoprocessing projects you will need to start your devcontainer using the `local-dev-pre-7x` environment. This is pinned to an older version of the docker image - `seasketch/geoprocessing-workspace:sha-69bb889`
