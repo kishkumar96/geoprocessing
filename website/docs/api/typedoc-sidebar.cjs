@@ -986,6 +986,11 @@ const typedocSidebar = { items: [
           },
           {
             "type": "doc",
+            "id": "api/geoprocessing/interfaces/GetDatasourceFeaturesOptions",
+            "label": "GetDatasourceFeaturesOptions"
+          },
+          {
+            "type": "doc",
             "id": "api/geoprocessing/interfaces/Histogram",
             "label": "Histogram"
           },
@@ -1423,11 +1428,6 @@ const typedocSidebar = { items: [
           },
           {
             "type": "doc",
-            "id": "api/geoprocessing/functions/genClipLoader",
-            "label": "genClipLoader"
-          },
-          {
-            "type": "doc",
             "id": "api/geoprocessing/functions/genClipToPolygonDatasources",
             "label": "genClipToPolygonDatasources"
           },
@@ -1533,6 +1533,11 @@ const typedocSidebar = { items: [
           },
           {
             "type": "doc",
+            "id": "api/geoprocessing/functions/getDatasourceFeatures",
+            "label": "getDatasourceFeatures"
+          },
+          {
+            "type": "doc",
             "id": "api/geoprocessing/functions/getExternalRasterDatasourceById",
             "label": "getExternalRasterDatasourceById"
           },
@@ -1545,6 +1550,11 @@ const typedocSidebar = { items: [
             "type": "doc",
             "id": "api/geoprocessing/functions/getFeatures",
             "label": "getFeatures"
+          },
+          {
+            "type": "doc",
+            "id": "api/geoprocessing/functions/getFeaturesForBBoxes",
+            "label": "getFeaturesForBBoxes"
           },
           {
             "type": "doc",
