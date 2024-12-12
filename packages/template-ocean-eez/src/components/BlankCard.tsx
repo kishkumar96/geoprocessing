@@ -14,9 +14,6 @@ import project from "../../project/projectClient.js";
 export const BlankCard: React.FunctionComponent<GeogProp> = (props) => {
   const { t } = useTranslation();
   const [{ isCollection }] = useSketchProperties();
-  const curGeography = project.getGeographyById(props.geographyId, {
-    fallbackGroup: "default-boundary",
-  });
 
   return (
     <ResultsCard title={t("BlankCard")} functionName="blankFunction">
@@ -28,8 +25,7 @@ export const BlankCard: React.FunctionComponent<GeogProp> = (props) => {
           <ReportError>
             <p>
               <Trans i18nKey="BlankCard Sketch Message">
-                This is a blank {sketchStr} for geography {curGeography.display}{" "}
-                with result {dataStr}.
+                This is a blank {sketchStr} with result {dataStr}.
               </Trans>
             </p>
           </ReportError>

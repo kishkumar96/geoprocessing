@@ -2,7 +2,7 @@
                                                                                                     
                                                                                                     
                                                                                                     
-squares.fgb polygons are rectangles in increments of 1 degree                                                                                                  
+squares.fgb are square polygons (plus a rectangle) in with coords in increments of 1 degree                                                                                                  
                                                                                                     
     4      @@@@@@@@@@@@@@@@@@@@                                     @@@@@@@@@@@@@@@@@@@@            
            @ ---------------- @                                     @ ---------------- @            
