@@ -27,9 +27,11 @@ export function scanTasks(
     query = {
       TableName: tableName,
       ProjectionExpression: "id, service",
-      FilterExpression: "service = :pk",
+      FilterExpression:
+        "service = :serviceName OR begins_with(service, :serviceNameChunked)",
       ExpressionAttributeValues: {
-        ":pk": serviceName,
+        ":serviceName": serviceName,
+        ":serviceNameChunked": `${serviceName}-chunk`,
       },
     };
   }
