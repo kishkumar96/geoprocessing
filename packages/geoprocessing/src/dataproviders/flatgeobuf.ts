@@ -3,6 +3,7 @@ import { geojson } from "flatgeobuf";
 import { takeAsync } from "flatgeobuf/lib/mjs/streams/utils.js";
 import { deserialize } from "flatgeobuf/lib/mjs/geojson.js";
 import { BBox, Feature, FeatureCollection, Geometry } from "../types/index.js";
+import { retry } from "../util/retry.js";
 
 export interface FgBoundingBox {
   minX: number;
@@ -57,33 +58,16 @@ export async function loadFgb<F extends Feature<Geometry>>(
   if (process.env.NODE_ENV !== "test")
     console.log("loadFgb", `url: ${url}`, `box: ${JSON.stringify(fgBox)}`);
 
-  const maxRetries = 3;
-  let attempt = 0;
-  let features: F[] | null = null;
+  // deserialize + takeAsync will await all features to be fetched
+  const takeFeatures = (url: string, fgBox: FgBoundingBox) =>
+    takeAsync(deserialize(url, fgBox) as AsyncGenerator);
 
-  while (attempt < maxRetries) {
-    try {
-      features = (await takeAsync(
-        deserialize(url, fgBox) as AsyncGenerator,
-      )) as F[];
-      if (!Array.isArray(features))
-        throw new Error("Unexpected result from loadFgb");
-      return features;
-    } catch (error: unknown) {
-      attempt++;
-      if (attempt >= maxRetries && error instanceof Error) {
-        throw new Error(
-          `Failed to load FGB after ${maxRetries} attempts: ${error.message}`,
-        );
-      }
-      const waitTime = attempt * 250; // Exponential backoff: 250ms, 500ms, 750ms, 1000ms, 1250ms
-      console.warn(
-        `Attempt ${attempt} failed. Retrying in ${waitTime / 1000} seconds...`,
-      );
-      await new Promise((resolve) => setTimeout(resolve, waitTime));
-    }
-  }
-  throw new Error("Failed to load FGB");
+  // retry up to 3 times if fetch fails
+  const features: F[] = (await retry(takeFeatures, [url, fgBox], 3)) as F[];
+
+  if (!Array.isArray(features))
+    throw new Error("Unexpected result from loadFgb");
+  return features;
 }
 
 /**

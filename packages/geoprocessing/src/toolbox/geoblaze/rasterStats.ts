@@ -16,6 +16,7 @@ import {
 } from "../../types/geoblaze.js";
 import { toRasterProjection, geoblazeDefaultStatValues } from "./geoblaze.js";
 import cloneDeep from "lodash/cloneDeep.js";
+import { retry } from "../../util/retry.js";
 
 // default values for all supported raster stats, beyond just geoblaze.stats
 export const defaultStatValues = {
@@ -99,9 +100,17 @@ export const rasterStats = async (
 
   try {
     if (categorical) {
-      const histogram = (await geoblaze.histogram(raster, projectedFeat, {
-        scaleType: "nominal",
-      })) as Histogram[];
+      const histogram = (await retry(
+        geoblaze.histogram,
+        [
+          raster,
+          projectedFeat,
+          {
+            scaleType: "nominal",
+          },
+        ],
+        3,
+      )) as Histogram[];
 
       // If no overlap, return default values
       if (
@@ -121,16 +130,20 @@ export const rasterStats = async (
         });
       }
     } else {
-      statsByBand = await geoblaze.stats(
-        raster,
-        projectedFeat,
-        {
-          stats: statsToCalculate.filter((stat) =>
-            GEOBLAZE_RASTER_STATS.includes(stat),
-          ), // filter to only native geoblaze stats
-          ...restCalcOptions,
-        },
-        filterFn,
+      statsByBand = await retry(
+        geoblaze.stats,
+        [
+          raster,
+          projectedFeat,
+          {
+            stats: statsToCalculate.filter((stat) =>
+              GEOBLAZE_RASTER_STATS.includes(stat),
+            ), // filter to only native geoblaze stats
+            ...restCalcOptions,
+          },
+          filterFn,
+        ],
+        3,
       );
     }
 
