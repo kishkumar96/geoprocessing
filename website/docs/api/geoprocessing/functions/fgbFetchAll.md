@@ -4,8 +4,8 @@
 function fgbFetchAll<F>(url, box?): Promise<F[]>
 ```
 
-Fetch features from flatgeobuf at url within bounding box
-Awaits all features before returning, rather than streaming them.
+Fetch features from flatgeobuf at url that intersect with bounding box
+Retries up to 3 times if fetch fails in error
 
 ## Type Parameters
 
@@ -15,14 +15,16 @@ Awaits all features before returning, rather than streaming them.
 
 ## Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `url` | `string` |
-| `box`? | [`BBox`](../type-aliases/BBox.md) |
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `url` | `string` | url of flatgeobuf file |
+| `box`? | [`BBox`](../type-aliases/BBox.md) | - |
 
 ## Returns
 
 `Promise`\<`F`[]\>
+
+feature array
 
 ## Deprecated
 

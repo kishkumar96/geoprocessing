@@ -3,7 +3,7 @@ import { retry } from "./retry.js";
 describe("retry", () => {
   test("should succeed on the first try", async () => {
     const fn = vi.fn().mockResolvedValue("success");
-    const result = await retry(fn, []);
+    const result = await retry(fn, [], 3);
     expect(result).toBe("success");
     expect(fn).toHaveBeenCalledTimes(1);
   });
@@ -13,7 +13,7 @@ describe("retry", () => {
       .fn()
       .mockRejectedValueOnce(new Error("first failure"))
       .mockResolvedValueOnce("success");
-    const result = await retry(fn, []);
+    const result = await retry(fn, [], 3);
     expect(result).toBe("success");
     expect(fn).toHaveBeenCalledTimes(2);
   });

@@ -125,7 +125,7 @@
 | [featureToSketch](functions/featureToSketch.md) | Converts Feature to Sketch with reasonable defaults given for sketch properties if not provided |
 | [featureToSketchCollection](functions/featureToSketchCollection.md) | Converts FeatureCollection to SketchCollection with reasonable defaults given for sketch properties if not provided |
 | [fetchGeoJSON](functions/fetchGeoJSON.md) | Given geoprocessing function request, fetches the GeoJSON, which can also be sketch JSON |
-| [fgbFetchAll](functions/fgbFetchAll.md) | Fetch features from flatgeobuf at url within bounding box Awaits all features before returning, rather than streaming them. |
+| [fgbFetchAll](functions/fgbFetchAll.md) | Fetch features from flatgeobuf at url that intersect with bounding box Retries up to 3 times if fetch fails in error |
 | [fgBoundingBox](functions/fgBoundingBox.md) | - |
 | [findAndUpdateMetricValue](functions/findAndUpdateMetricValue.md) | Returns new sketchMetrics array with first sketchMetric matched set with new value. If no match, returns copy of sketchMetrics. Does not mutate array in place. |
 | [firstMatching](functions/firstMatching.md) | Returns the first item that returns true for filter |
@@ -236,8 +236,8 @@
 | [isTruthyAttributeValue](functions/isTruthyAttributeValue.md) | - |
 | [isVectorDatasource](functions/isVectorDatasource.md) | - |
 | [keyBy](functions/keyBy.md) | Similar to lodash keyBy |
-| [loadCog](functions/loadCog.md) | Returns cog-aware georaster at given url. Will not fetch raster values until subsequent geoblaze calls are made with a geometry and it will calculate the window to load based on the geometry. The subsequent geoblaze calls (e.g. sum) must be called async to allow the raster to load. |
-| [loadFgb](functions/loadFgb.md) | Fetch features from flatgeobuf at url that intersect with bounding box Awaits all features before returning, rather than streaming them. |
+| [loadCog](functions/loadCog.md) | Returns cog-aware georaster at given url. If fetch fails, will retry up to 3 times Will not fetch raster values until subsequent geoblaze calls are made with a geometry and it will calculate the window to load based on the geometry. The subsequent geoblaze calls (e.g. sum) must be called async to allow the raster to load. |
+| [loadFgb](functions/loadFgb.md) | Fetch features from flatgeobuf at url that intersect with bounding box Retries up to 3 times if fetch fails in error |
 | [loadFgbFromDisk](functions/loadFgbFromDisk.md) | Synchronously load a flatgeobuf file from disk. Assumed to be in WGS84 EPSG:4326 projection |
 | [maxWidth](functions/maxWidth.md) | Returns the maximum width of the geojson or bbox |
 | [metricsForSketch](functions/metricsForSketch.md) | Returns metrics for given sketch (can be an array of sketches) |

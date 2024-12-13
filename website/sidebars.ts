@@ -105,6 +105,11 @@ const sidebars: SidebarsConfig = {
         },
         {
           type: "doc",
+          id: "publicdatasources",
+          label: "Public Datasources",
+        },
+        {
+          type: "doc",
           id: "toolbox/toolbox",
           label: "Spatial Toolbox",
         },

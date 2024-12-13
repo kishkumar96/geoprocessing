@@ -8,9 +8,11 @@ A VectorDataSource is a bespoke format created by the SeaSketch team. This was t
 
 Learn how to use it on the [data providers](./dataproviders.md#vectordatasource) page.
 
-- [OpenStreetMap Land Polygons](https://d3p1dsef9f0gjr.cloudfront.net)
+- OpenStreetMap Land Polygons
+  - [https://d3p1dsef9f0gjr.cloudfront.net](https://d3p1dsef9f0gjr.cloudfront.net)
   - Feature ID Property: `gid`
-- [MarineRegions EEZ With Land Zones V3](https://d3muy0hbwp5qkl.cloudfront.net)
+- MarineRegions EEZ With Land Zones V3
+  - [https://d3muy0hbwp5qkl.cloudfront.net](https://d3muy0hbwp5qkl.cloudfront.net)
   - Feature ID Property: `UNION`
 
 ### Flatgeobuf

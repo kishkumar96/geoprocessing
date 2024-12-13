@@ -1,11 +1,11 @@
 # loadFgb()
 
 ```ts
-function loadFgb<F>(url, box?): Promise<F[]>
+function loadFgb<F>(url, bbox?): Promise<F[]>
 ```
 
 Fetch features from flatgeobuf at url that intersect with bounding box
-Awaits all features before returning, rather than streaming them.
+Retries up to 3 times if fetch fails in error
 
 ## Type Parameters
 
@@ -15,11 +15,13 @@ Awaits all features before returning, rather than streaming them.
 
 ## Parameters
 
-| Parameter | Type |
-| ------ | ------ |
-| `url` | `string` |
-| `box`? | [`BBox`](../type-aliases/BBox.md) |
+| Parameter | Type | Description |
+| ------ | ------ | ------ |
+| `url` | `string` | url of flatgeobuf file |
+| `bbox`? | [`BBox`](../type-aliases/BBox.md) | optional bounding box to fetch features that intersect with |
 
 ## Returns
 
 `Promise`\<`F`[]\>
+
+feature array
